@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gerador de Quiz - Revisão VA2 (SQL)</title>
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4; --glass: rgba(255,255,255,0.03);
+    --success:#16a34a; --danger:#ef4444; --neutral:#e6eef6;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%; margin:0; background:
+    radial-gradient(ellipse at top left, rgba(14,165,164,0.08), transparent 20%),
+    linear-gradient(180deg,#071225 0%, #07192a 100%);
+    color:var(--neutral); -webkit-font-smoothing:antialiased}
+  .container{max-width:980px;margin:28px auto;padding:20px;}
+  h1{font-size:20px;margin:0 0 4px}
+  p.lead{color:var(--muted);margin:6px 0 18px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+  input[type=text], select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--neutral);outline:none}
+  .row{display:flex;gap:12px}
+  .col{flex:1}
+  button{background:var(--accent);color:#032; border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--neutral)}
+  .tiny{font-size:12px;color:var(--muted)}
+  .quiz-area{margin-top:16px}
+  .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:8px}
+  .q h3{margin:0;font-size:15px}
+  .options{margin-top:8px}
+  .option{display:block;margin:6px 0}
+  .summary{padding:12px;border-radius:8px;margin-top:12px;background:linear-gradient(90deg, rgba(16,185,129,0.05), transparent)}
+  .result-correct{color:var(--success);font-weight:700}
+  .result-wrong{color:var(--danger);font-weight:700}
+  .explain{margin-top:8px;color:var(--muted);font-size:13px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;margin-left:6px}
+  footer{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
+  .notice{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-bottom:14px;color:var(--muted);font-size:13px}
+  .flex{display:flex;gap:8px;align-items:center}
+  .small{font-size:13px}
+  .hidden{display:none}
+  textarea.answer{min-height:86px}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Gerador de Quiz – Revisão VA2 (SQL)</h1>
+      <p class="lead">Gera quizzes com base no conteúdo que você forneceu sobre WHERE/HAVING, JOINs, Views, Subqueries e o mini-simulado. Escolha o número de questões e cole sua API Key do Google AI (opcional — para feedback automático em dissertativas).</p>
+
+      <div class="notice">
+        <strong>Atenção:</strong> Colocar sua chave aqui permite que o navegador a use para chamar a API do Google. Isto é seguro apenas para uso pessoal/testes. Em produção, coloque a chave em um backend.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 160px;gap:12px">
+        <div>
+          <label>Google API Key (opcional - cole se quiser usar a IA para gerar/avaliar respostas)</label>
+          <input id="apiKey" type="text" placeholder="Cole sua API key aqui (ex: AIza...)" />
+        </div>
+        <div>
+          <label>Nº de questões</label>
+          <select id="qCount">
+            <option value="10">10 questões</option>
+            <option value="15" selected>15 questões</option>
+            <option value="20">20 questões</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="btnGenerate">Gerar Quiz</button>
+        <button id="btnRegenerate" class="secondary" disabled>Gerar Novamente</button>
+        <button id="btnClear" class="secondary">Limpar Respostas</button>
+        <div style="margin-left:auto" class="tiny">Fonte: Revisão VA2 + conteúdo passado.</div>
+      </div>
+
+    </div>
+
+    <div id="quizWrap" class="card hidden">
+      <div style="display:flex;align-items:center;gap:8px">
+        <h2 id="quizTitle" style="margin:0">Quiz</h2><div id="meta" class="pill tiny"></div>
+        <div style="margin-left:auto" class="tiny">Tempo: <span id="timer">--:--</span></div>
+      </div>
+      <div class="quiz-area" id="quizArea"></div>
+
+      <div class="controls">
+        <button id="btnSubmit">Enviar e Corrigir</button>
+        <button id="btnNew" class="secondary">Gerar Novamente (outra variação)</button>
+        <div style="margin-left:auto" class="tiny">Dissertativas serão avaliadas pela IA quando possível.</div>
+      </div>
+
+      <div id="resultArea" class="hidden"></div>
+    </div>
+
+    <footer>
+      Gerador simples para estudo — criado com base no seu arquivo de revisão. Use com responsabilidade.
+    </footer>
+  </div>
+
+<script>
+/*
+  quiz.html
+  - Usa o conteúdo da Revisão VA2 (embutido abaixo) para criar questões.
+  - Tenta usar a Google Generative Language endpoint via fetch.
+  - Fallback local se a chamada ao AI falhar (CORS ou sem chave).
+*/
+
+/* ---------- Conteúdo (extraído do Revisão VA2.docx / texto que você forneceu) ---------- */
+const CONTENT = {
+  topics: {
+    whereHaving: {
+      title: "Filtragem (WHERE vs HAVING)",
+      bullets: [
+        "Use WHERE para filtrar registros individuais (linhas).",
+        "Use HAVING para filtrar grupos (resultados de funções de agregação como COUNT, SUM, AVG).",
+        "WHERE é processado ANTES do GROUP BY.",
+        "HAVING é processado DEPOIS do GROUP BY.",
+        "Não pode usar funções de agregação na cláusula WHERE; use HAVING para isso."
+      ]
+    },
+    views: {
+      title: "Views (Tabelas Virtuais)",
+      bullets: [
+        "É uma tabela virtual, baseada no resultado de um SELECT armazenado.",
+        "Vantagens: Segurança (restringe colunas/linhas) e Simplificação (esconde JOINs e cálculos complexos).",
+        "Uma View não é uma cópia física dos dados (normalmente).",
+        "Comando: CREATE VIEW nome_da_view AS SELECT ...."
+      ]
+    },
+    joins: {
+      title: "Junções (JOINs)",
+      bullets: [
+        "INNER JOIN: retorna apenas registros que existem nas duas tabelas.",
+        "LEFT JOIN: retorna todos os registros da tabela da esquerda e preenche com NULL quando não houver correspondência na direita.",
+        "RIGHT JOIN: retorna todos os registros da tabela da direita.",
+        "O otimizador do SGBD pode reorganizar JOINs para performance; a ordem escrita afeta legibilidade."
+      ]
+    },
+    subqueries: {
+      title: "Subconsultas (Subqueries)",
+      bullets: [
+        "É uma consulta SELECT dentro de outra consulta.",
+        "Podem ser usadas em SELECT, FROM, WHERE e HAVING.",
+        "Usadas com IN para comparar com múltiplos valores.",
+        "Não são sempre melhores ou piores que JOINs; depende do caso."
+      ]
+    }
+  },
+
+  // Mini-simulado (base para gerar perguntas e gabarito)
+  miniSimulado: [
+    // dissertativas (2)
+    { type: "essay", id: "d1", text: "Explique a diferença fundamental de uso e ordem entre as cláusulas WHERE e HAVING em uma consulta SQL.", answer: "WHERE filtra linhas individuais e é executado antes do GROUP BY. HAVING filtra grupos (após agregação) e é executado depois do GROUP BY. HAVING filtra funções (SUM, COUNT), WHERE não." },
+    { type: "essay", id: "d2", text: "O que é uma View e quais são suas duas principais vantagens práticas?", answer: "Uma View é uma tabela virtual baseada em um SELECT armazenado. Vantagens: 1) Segurança (restringir acesso a colunas/linhas) e 2) Simplificação (esconder JOINs e cálculos complexos)." },
+
+    // V/F (2)
+    { type: "tf", id: "vf1", text: "Um LEFT JOIN da Tabela A (esquerda) para a Tabela B (direita) retornará apenas os registros que existem em ambas as tabelas.", answer: false, explanation: "Isso descreve um INNER JOIN. LEFT JOIN retorna todos da esquerda, preenchendo com NULL quando não houver correspondência." },
+    { type: "tf", id: "vf2", text: "A cláusula WHERE é processada antes da cláusula GROUP BY, enquanto a cláusula HAVING é processada depois.", answer: true, explanation: "WHERE filtra linhas antes do GROUP BY; HAVING filtra resultados agregados depois do GROUP BY." },
+
+    // Relação (2)
+    { type: "relation", id: "r1", text: "I. A cláusula HAVING é necessária para filtrar resultados baseados em funções de agregação como COUNT ou SUM.  II. A cláusula WHERE não pode filtrar diretamente resultados de funções agregadas.", correctOption: "D", explanation: "Ambas são verdadeiras; a II justifica a I." },
+    { type: "relation", id: "r2", text: "I. Views são usadas para garantir segurança, permitindo restringir quais colunas e linhas os usuários podem visualizar. II. Elas são tabelas virtuais que armazenam fisicamente uma cópia duplicada dos dados para simplificar os JOINs.", correctOption: "B", explanation: "I é verdadeira; II é falsa (Views são virtuais, não cópias físicas)." },
+
+    // Marque a correta (2)
+    { type: "mcq", id: "m1", text: "Em qual das seguintes cláusulas NÃO é um local comum para se utilizar uma subconsulta (subquery)?", choices: ["SELECT","FROM","WHERE","ORDER BY"], answerIndex: 3, explanation: "ORDER BY não é um local padrão de uso como as outras três." },
+    { type: "mcq", id: "m2", text: "Qual comando é usado para criar uma tabela virtual baseada no resultado de uma consulta SELECT armazenada?", choices: ["CREATE TABLE VIRTUAL","CREATE VIEW","CREATE SUBQUERY","SELECT INTO VIEW"], answerIndex: 1, explanation: "CREATE VIEW." },
+
+    // Marque a incorreta (2)
+    { type: "wrong", id: "w1", text: "Sobre Subqueries (consultas aninhadas), marque a afirmativa INCORRETA:", choices: ["Podem ser usadas na cláusula HAVING.","São úteis com o operador IN para comparar com múltiplos valores retornados pela subquery.","Em termos de performance, subqueries são sempre preferíveis aos JOINs.","Podem ser usadas para calcular um valor (como uma média) que será usado na consulta principal."], answerIndex: 2, explanation: "Em termos de performance, subqueries não são sempre preferíveis aos JOINs; depende do caso." },
+    { type: "wrong", id: "w2", text: "Sobre JOINs, marque a afirmativa INCORRETA:", choices: ["LEFT JOIN retorna todos os registros da tabela da esquerda.","INNER JOIN retorna apenas os registros que têm correspondência em ambas as tabelas.","O otimizador de consultas do SGBD pode reorganizar a execução dos JOINs para melhor performance.","A ordem em que os JOINs são escritos no código não afeta em nada a legibilidade da consulta."], answerIndex: 3, explanation: "A ordem escrita afeta legibilidade mesmo que o otimizador mude a execução." }
+  ]
+};
+
+/* ---------- Helpers ---------- */
+function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
+
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+
+/* ---------- Quiz generation logic ---------- */
+let currentQuiz = null;
+
+function pickQuestions(count){
+  // Start from miniSimulado base and expand with template variations from content
+  const base = [...CONTENT.miniSimulado];
+  const pool = [];
+
+  // Use base as seeds, but also create small variations programmatically:
+  base.forEach(q=>{
+    pool.push({...q}); // original
+    // Create small variations for MCQ/TF by rephrasing slightly
+    if(q.type==='tf'){
+      pool.push({...q, id: q.id + '_v2', text: q.text.replace(/LEFT JOIN/,'LEFT JOIN (versão)')});
+    }
+    if(q.type==='mcq' || q.type==='wrong'){
+      // permute choices a bit
+      pool.push({...q, id: q.id + '_v2'});
+    }
+  });
+
+  // Also synthesize some new questions from topics for variety:
+  const synth = [];
+  synth.push({type:'mcq', id:uid('s'), text:'Qual cláusula é processada antes do GROUP BY?', choices:['HAVING','WHERE','ORDER BY','GROUP BY'], answerIndex:1, explanation:'WHERE é processada antes do GROUP BY.'});
+  synth.push({type:'mcq', id:uid('s'), text:'Qual JOIN retorna todos os registros da tabela da esquerda?', choices:['INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN'], answerIndex:1, explanation:'LEFT JOIN retorna todos da esquerda.'});
+  synth.push({type:'tf', id:uid('s'), text:'Uma View é normalmente uma cópia física dos dados.', answer:false, explanation:'Uma View é virtual, não uma cópia física.'});
+  synth.push({type:'relation', id:uid('s'), text:'I. WHERE filtra antes do GROUP BY. II. HAVING filtra após agregação.', correctOption:'D', explanation:'Ambas verdadeiras e II justifica I.'});
+  synth.forEach(s=>pool.push(s));
+
+  // shuffle and pick
+  shuffle(pool);
+  // ensure at least 3 essays
+  const essays = pool.filter(q=>q.type==='essay');
+  // if fewer than 3 essays in pool, duplicate the existing essay with rephrase
+  while(essays.length < 3){
+    if(CONTENT.miniSimulado.find(x=>x.type==='essay')){
+      const ex = CONTENT.miniSimulado.filter(x=>x.type==='essay')[0];
+      pool.push({...ex, id: ex.id + '_extra_' + essays.length, text: ex.text + ' (variação)'});
+      essays.push(true);
+    } else break;
+  }
+
+  // Now pick exactly `count`, but ensure at least 3 essays
+  const selected = [];
+  // first add up to 3 essays
+  const essayPool = pool.filter(q=>q.type==='essay');
+  while(selected.length < Math.min(3, essayPool.length) && selected.length < count){
+    selected.push(essayPool.shift());
+  }
+  // then fill the rest with non-essay
+  const others = pool.filter(q=>q.type!=='essay');
+  for(let i=0; selected.length < count && i<others.length; i++){
+    selected.push(others[i]);
+  }
+
+  // if still not enough (rare), allow more essays
+  if(selected.length < count){
+    const remaining = pool.filter(q=>!selected.includes(q));
+    for(let i=0; i<remaining.length && selected.length < count; i++) selected.push(remaining[i]);
+  }
+
+  // final shuffle
+  shuffle(selected);
+  return selected.slice(0,count);
+}
+
+/* ---------- UI rendering ---------- */
+const quizWrap = document.getElementById('quizWrap');
+const quizArea = document.getElementById('quizArea');
+const meta = document.getElementById('meta');
+const timerEl = document.getElementById('timer');
+const resultArea = document.getElementById('resultArea');
+
+document.getElementById('btnGenerate').addEventListener('click', ()=>{
+  const k = document.getElementById('apiKey').value.trim();
+  const count = parseInt(document.getElementById('qCount').value,10);
+  generateQuiz(count, k);
+});
+
+document.getElementById('btnRegenerate').addEventListener('click', ()=>{
+  if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.apiKey, true);
+});
+
+document.getElementById('btnNew').addEventListener('click', ()=> {
+  if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.apiKey, true);
+});
+
+document.getElementById('btnClear').addEventListener('click', ()=>{
+  document.querySelectorAll('#quizArea input[type=radio]').forEach(i=>i.checked=false);
+  document.querySelectorAll('#quizArea textarea, #quizArea input[type=text]').forEach(i=>i.value='');
+});
+
+document.getElementById('btnSubmit').addEventListener('click', async ()=>{
+  if(!currentQuiz) return;
+  // collect answers
+  const answers = [];
+  for(const q of currentQuiz.questions){
+    const el = document.getElementById(q._domId);
+    if(!el) continue;
+    let resp = null;
+    if(q.type==='mcq' || q.type==='wrong'){
+      const radios = el.querySelectorAll('input[type=radio]');
+      for(const r of radios) if(r.checked) resp = parseInt(r.value,10);
+    } else if(q.type==='tf'){
+      const v = el.querySelector('select');
+      resp = v ? (v.value==='true') : null;
+    } else if(q.type==='relation'){
+      const s = el.querySelector('select');
+      resp = s ? s.value : null;
+    } else if(q.type==='essay'){
+      const ta = el.querySelector('textarea');
+      resp = ta ? ta.value.trim() : '';
+    }
+    answers.push({id:q.id, type:q.type, question:q, answer:resp});
+  }
+
+  // Disable button while grading
+  document.getElementById('btnSubmit').disabled = true;
+  resultArea.classList.remove('hidden');
+  resultArea.innerHTML = '<div class="summary">Corrigindo... Aguarde (pode levar alguns segundos se a IA for chamada)</div>';
+  // Grade
+  const grading = await gradeAnswers(answers, currentQuiz.apiKey);
+  // Show results
+  renderResults(grading);
+  document.getElementById('btnSubmit').disabled = false;
+});
+
+function renderResults(grading){
+  const total = grading.length;
+  let correct = 0;
+  let html = '<h3>Resultado</h3>';
+  html += '<div class="summary"><strong>Resumo:</strong> ' + grading.length + ' questões</div>';
+  html += '<div style="margin-top:10px">';
+  grading.forEach((g, idx)=>{
+    const q = g.question;
+    html += `<div class="q"><h3>${idx+1}. ${escapeHtml(q.text)}</h3>`;
+    if(q.type==='essay'){
+      if(g.autoGraded){
+        html += `<div class="tiny">Nota (auto): <strong>${g.score ?? '—'}</strong> / 10 <span class="badge">${g.label ?? ''}</span></div>`;
+        html += `<div class="explain">${escapeHtml(g.feedback || 'Sem feedback.')}</div>`;
+        if(g.score >= 6) correct++;
+      } else {
+        html += `<div class="tiny">Avaliação automática indisponível — veja a resposta esperada e critérios abaixo.</div>`;
+        html += `<div class="explain"><strong>Resposta esperada:</strong> ${escapeHtml(q.answer)}</div>`;
+        html += `<div class="explain"><strong>Critérios:</strong> WHERE vs HAVING e ordem de execução; menção a funções agregadas. (Marcar 0-10).</div>`;
+      }
+    } else {
+      if(g.correct){
+        html += `<div class="result-correct">✔ Correto</div>`;
+        correct++;
+      } else {
+        html += `<div class="result-wrong">✖ Errado</div>`;
+        html += `<div class="explain"><strong>Explicação:</strong> ${escapeHtml(g.explanation || '—')}</div>`;
+      }
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  html += `<div class="summary" style="margin-top:12px"><strong>Acertos:</strong> ${correct} / ${total}</div>`;
+  resultArea.innerHTML = html;
+}
+
+/* ---------- Grading logic ---------- */
+async function gradeAnswers(answers, apiKey){
+  // For objective questions, use local gabarito
+  const grading = [];
+  for(const a of answers){
+    const q = a.question;
+    const record = {question: q, userAnswer: a.answer, type: a.type, correct:false, explanation:null, autoGraded:false};
+    if(a.type==='mcq' || a.type==='wrong'){
+      const isCorrect = (a.answer !== null && a.answer === q.answerIndex);
+      record.correct = isCorrect;
+      record.explanation = q.explanation || '';
+      record.autoGraded = true;
+    } else if(a.type==='tf'){
+      const isCorrect = (typeof a.answer === 'boolean' && a.answer === q.answer);
+      record.correct = isCorrect;
+      record.explanation = q.explanation || '';
+      record.autoGraded = true;
+    } else if(a.type==='relation'){
+      const isCorrect = (a.answer === q.correctOption);
+      record.correct = isCorrect;
+      record.explanation = q.explanation || '';
+      record.autoGraded = true;
+    } else if(a.type==='essay'){
+      // Request the AI to grade the essay (scale 0-10) and give feedback (if apiKey provided)
+      if(apiKey){
+        try{
+          const prompt = buildEssayGradingPrompt(q.text, q.answer, a.answer);
+          const aiResp = await callGenerativeAPI(apiKey, prompt);
+          // Expect AI to return JSON-like: {score: X, feedback: "..."}
+          // We'll try to parse.
+          const parsed = tryParseScoreFeedback(aiResp);
+          if(parsed){
+            record.autoGraded = true;
+            record.score = parsed.score;
+            record.feedback = parsed.feedback;
+            record.label = parsed.score >= 6 ? 'Bom' : 'Precisa melhorar';
+          } else {
+            // fallback: place AI raw text as feedback
+            record.autoGraded = true;
+            record.feedback = aiResp;
+            record.score = null;
+          }
+        }catch(err){
+          console.warn('AI grading failed',err);
+          record.autoGraded = false;
+        }
+      } else {
+        record.autoGraded = false;
+      }
+    }
+    grading.push(record);
+  }
+  return grading;
+}
+
+/* ---------- AI calling utilities ---------- */
+async function callGenerativeAPI(apiKey, prompt){
+  // Try to call Generative Language API (text-bison style) via REST.
+  // We'll attempt to use the "generativelanguage" endpoint as commonly documented.
+  // Note: CORS or API changes might break this; we catch errors and return fallback text.
+  const endpoint = 'https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=' + encodeURIComponent(apiKey);
+  const body = {
+    prompt: { text: prompt },
+    // optional parameters can be added like temperature, maxOutputTokens
+    temperature: 0.2,
+    candidateCount: 1,
+    maxOutputTokens: 512
+  };
+
+  // Use fetch
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+      // Some docs show Authorization Bearer, but when using ?key=... it's okay for quick prototyping.
+    },
+    body: JSON.stringify(body)
+  });
+
+  if(!resp.ok) {
+    const txt = await resp.text();
+    throw new Error('API error: ' + resp.status + ' - ' + txt);
+  }
+  const j = await resp.json();
+  // The exact field varies; generative language may return j.candidates[0].output or j.output[0].content[0].text depending on version.
+  // Try to extract robustly:
+  let textOut = '';
+  if(j.candidates && j.candidates[0] && j.candidates[0].output){
+    // older format
+    textOut = j.candidates[0].output;
+  } else if(j.candidates && j.candidates[0] && j.candidates[0].content){
+    textOut = j.candidates[0].content.map(c=>c.text || '').join('\n');
+  } else if(j.output && j.output[0] && j.output[0].content){
+    textOut = j.output[0].content.map(c=>c.text || '').join('\n');
+  } else if(j.result && typeof j.result === 'string') {
+    textOut = j.result;
+  } else {
+    textOut = JSON.stringify(j);
+  }
+  return textOut;
+}
+
+function tryParseScoreFeedback(aiText){
+  // The prompt we send asks for a JSON with score and feedback. Try to extract numbers.
+  // Look for a JSON block
+  try{
+    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+    if(jsonMatch){
+      const obj = JSON.parse(jsonMatch[0]);
+      if(typeof obj.score !== 'undefined') return {score: Number(obj.score), feedback: String(obj.feedback || '')};
+    }
+  }catch(e){}
+  // fallback try to find "score: X" patterns
+  const scoreMatch = aiText.match(/score[:\s]*([0-9]+(?:\.[0-9]+)?)/i);
+  if(scoreMatch){
+    const s = Number(scoreMatch[1]);
+    const fb = aiText.replace(scoreMatch[0],'').trim();
+    return {score: s, feedback: fb};
+  }
+  return null;
+}
+
+function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){
+  // Ask the model to grade in JSON format.
+  return `Você é um avaliador especialista em SQL. Leia a questão e a resposta do aluno. Retorne apenas um JSON válido com formato: {"score": NotaEntre0e10, "feedback": "texto com comentários específicos, pontos fortes e pontos a melhorar (curto)"}.
+
+Questão:
+${questionText}
+
+Resposta esperada (exemplo / gabarito):
+${expectedAnswer}
+
+Resposta do aluno:
+${studentAnswer}
+
+Avalie a resposta do aluno comparando com o esperado. Seja objetivo: devolva somente o JSON. Nota de 0 a 10 (número). Feedback breve.`;
+}
+
+/* ---------- Quiz rendering ---------- */
+function generateQuiz(count = 15, apiKey = '', regenerate=false){
+  const questions = pickQuestions(count);
+  currentQuiz = {questions, apiKey, created: new Date()};
+  quizArea.innerHTML = '';
+  document.getElementById('btnRegenerate').disabled = false;
+  quizWrap.classList.remove('hidden');
+  meta.textContent = `${questions.length} questões • gerado em ${currentQuiz.created.toLocaleTimeString()}`;
+  resultArea.classList.add('hidden'); resultArea.innerHTML='';
+
+  questions.forEach((q, idx)=>{
+    const domId = uid('qdom_'); q._domId = domId;
+    const container = document.createElement('div'); container.className = 'q';
+    container.id = domId;
+
+    const title = document.createElement('h3'); title.innerHTML = `${idx+1}. ${q.text}`;
+    container.appendChild(title);
+
+    const opts = document.createElement('div'); opts.className = 'options';
+
+    if(q.type==='mcq' || q.type==='wrong'){
+      const choices = q.choices ? q.choices : (q.choices || []);
+      // shuffle choices when generating (but keep index of correct updated? we won't change original to keep gabarito stable)
+      // We'll create radio list with values=0..n-1 corresponding to current order; but we must map back to original answer index.
+      // Simplify: do not shuffle choices to keep consistency. (we could shuffle but then store mapping)
+      choices.forEach((c,i)=>{
+        const id = uid('opt_');
+        opts.innerHTML += `<label class="option"><input type="radio" name="${domId}_mcq" value="${i}"> ${escapeHtml(c)}</label>`;
+      });
+    } else if(q.type==='tf'){
+      opts.innerHTML = `<label class="option"><select><option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option></select></label>`;
+    } else if(q.type==='relation'){
+      opts.innerHTML = `<label class="option small">Marque a alternativa correta: <select><option value="">-- escolha --</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></label>`;
+    } else if(q.type==='essay'){
+      opts.innerHTML = `<label class="option"><textarea class="answer" placeholder="Escreva sua resposta aqui..."></textarea></label>`;
+    } else { opts.innerHTML = `<div class="tiny">Tipo de questão não suportado.</div>`; }
+
+    container.appendChild(opts);
+    quizArea.appendChild(container);
+  });
+
+  // start a basic timer (optional)
+  startTimer(20*60); // 20 minutes display (just visual, not enforced)
+}
+
+/* ---------- Timer ---------- */
+let timerInterval = null;
+function startTimer(seconds){
+  if(timerInterval) clearInterval(timerInterval);
+  let s = seconds;
+  function update(){
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    timerEl.textContent = `${mm}:${ss}`;
+    if(s>0) s--; else clearInterval(timerInterval);
+  }
+  update();
+  timerInterval = setInterval(update,1000);
+}
+
+/* ---------- Utilities ---------- */
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+}
+
+/* ---------- On load: try to enable quick demo without key ---------- */
+(function init(){
+  // Pre-generate a quiz preview? no. Wait for user click.
+})();
+
+</script>
+</body>
+</html>
