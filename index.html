@@ -2,113 +2,217 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gerador de Quiz - Revisão VA2 (SQL)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quiz IA – Revisão VA2 (SQL)</title>
 <style>
-  :root{
-    --bg:#0f1724; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4; --glass: rgba(255,255,255,0.03);
+  :root {
+    --bg:#0f1724; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4;
     --success:#16a34a; --danger:#ef4444; --neutral:#e6eef6;
-    font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --glass:rgba(255,255,255,0.05);
+    font-family: 'Inter', system-ui, sans-serif;
   }
-  html,body{height:100%; margin:0; background:
-    radial-gradient(ellipse at top left, rgba(14,165,164,0.08), transparent 20%),
-    linear-gradient(180deg,#071225 0%, #07192a 100%);
-    color:var(--neutral); -webkit-font-smoothing:antialiased}
-  .container{max-width:980px;margin:28px auto;padding:20px;}
-  h1{font-size:20px;margin:0 0 4px}
-  p.lead{color:var(--muted);margin:6px 0 18px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  input[type=text], select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--neutral);outline:none}
-  .row{display:flex;gap:12px}
-  .col{flex:1}
-  button{background:var(--accent);color:#032; border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-  button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--neutral)}
-  .tiny{font-size:12px;color:var(--muted)}
-  .quiz-area{margin-top:16px}
-  .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:8px}
-  .q h3{margin:0;font-size:15px}
-  .options{margin-top:8px}
-  .option{display:block;margin:6px 0}
-  .summary{padding:12px;border-radius:8px;margin-top:12px;background:linear-gradient(90deg, rgba(16,185,129,0.05), transparent)}
-  .result-correct{color:var(--success);font-weight:700}
-  .result-wrong{color:var(--danger);font-weight:700}
-  .explain{margin-top:8px;color:var(--muted);font-size:13px}
-  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;margin-left:6px}
-  footer{color:var(--muted);font-size:13px;margin-top:18px;text-align:center}
-  .notice{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-bottom:14px;color:var(--muted);font-size:13px}
-  .flex{display:flex;gap:8px;align-items:center}
-  .small{font-size:13px}
-  .hidden{display:none}
-  textarea.answer{min-height:86px}
-  .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
-  .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px}
+
+  html, body {
+    margin:0; padding:0;
+    background: radial-gradient(ellipse at top left, rgba(14,165,164,0.08), transparent 20%),
+                linear-gradient(180deg, #071225, #07192a);
+    color: var(--neutral);
+    -webkit-font-smoothing: antialiased;
+    min-height:100vh;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 18px auto;
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+
+  p.lead {
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  }
+
+  label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display:block;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    border: 1px solid var(--glass);
+    border-radius: 8px;
+    background: var(--glass);
+    color: var(--neutral);
+    padding: 10px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+
+  textarea { min-height: 90px; }
+
+  button {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #032;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  button:hover { background: #10b0b0; }
+  button.secondary {
+    background: transparent;
+    border: 1px solid var(--glass);
+    color: var(--neutral);
+  }
+
+  .notice {
+    background: var(--glass);
+    padding: 10px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+  }
+
+  .flex { display:flex; gap:12px; flex-wrap: wrap; align-items: flex-end; }
+
+  .quiz-area { margin-top: 16px; }
+  .q { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .q h3 { font-size: 1rem; margin: 0 0 6px; }
+
+  .option { display:block; margin: 6px 0; }
+  .summary { background: rgba(14,165,164,0.07); border-radius: 8px; padding: 10px; margin-top: 10px; }
+
+  .result-correct { color: var(--success); font-weight: 600; }
+  .result-wrong { color: var(--danger); font-weight: 600; }
+  .explain { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+  .controls { display:flex; gap:8px; flex-wrap: wrap; margin-top:10px; }
+  .tiny { font-size: 0.8rem; color: var(--muted); }
+
+  footer {
+    text-align:center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 24px;
+  }
+
+  /* ---- Responsividade ---- */
+  @media (max-width: 768px) {
+    h1 { font-size: 1.4rem; }
+    .container { padding: 12px; }
+    button, select, input, textarea { font-size: 0.95rem; }
+    .flex { flex-direction: column; align-items: stretch; }
+    .controls { flex-direction: column; }
+    .q h3 { font-size: 0.95rem; }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.2rem; }
+    .q { padding: 10px; }
+  }
+
+  .hidden { display:none; }
+
+  .badge {
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.03);
+    font-size:12px;
+    margin-left:6px;
+  }
+
+  .pill {
+    padding:6px 10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.02);
+    font-size:13px;
+  }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>Gerador de Quiz – Revisão VA2 (SQL)</h1>
-      <p class="lead">Gera quizzes com base no conteúdo que você forneceu sobre WHERE/HAVING, JOINs, Views, Subqueries e o mini-simulado. Escolha o número de questões e cole sua API Key do Google AI (opcional — para feedback automático em dissertativas).</p>
+<div class="container">
+  <div class="card">
+    <h1>Gerador de Quiz – Revisão VA2 (SQL)</h1>
+    <p class="lead">Gere quizzes personalizados sobre WHERE/HAVING, JOINs, Views e Subqueries. Escolha a quantidade, cole sua chave da Google AI e pratique.</p>
 
-      <div class="notice">
-        <strong>Atenção:</strong> Colocar sua chave aqui permite que o navegador a use para chamar a API do Google. Isto é seguro apenas para uso pessoal/testes. Em produção, coloque a chave em um backend.
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 160px;gap:12px">
-        <div>
-          <label>Google API Key (opcional - cole se quiser usar a IA para gerar/avaliar respostas)</label>
-          <input id="apiKey" type="text" placeholder="Cole sua API key aqui (ex: AIza...)" />
-        </div>
-        <div>
-          <label>Nº de questões</label>
-          <select id="qCount">
-            <option value="10">10 questões</option>
-            <option value="15" selected>15 questões</option>
-            <option value="20">20 questões</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button id="btnGenerate">Gerar Quiz</button>
-        <button id="btnRegenerate" class="secondary" disabled>Gerar Novamente</button>
-        <button id="btnClear" class="secondary">Limpar Respostas</button>
-        <div style="margin-left:auto" class="tiny">Fonte: Revisão VA2 + conteúdo passado.</div>
-      </div>
-
+    <div class="notice">
+      ⚠️ <strong>Aviso:</strong> A chave API colada aqui é usada apenas localmente no navegador para chamadas diretas à API. Não será armazenada. Use somente para estudo/testes.
     </div>
 
-    <div id="quizWrap" class="card hidden">
-      <div style="display:flex;align-items:center;gap:8px">
-        <h2 id="quizTitle" style="margin:0">Quiz</h2><div id="meta" class="pill tiny"></div>
-        <div style="margin-left:auto" class="tiny">Tempo: <span id="timer">--:--</span></div>
+    <div class="flex">
+      <div style="flex:1;">
+        <label>Google API Key (opcional)</label>
+        <input id="apiKey" type="text" placeholder="Cole aqui sua API Key (ex: AIza...)" />
       </div>
-      <div class="quiz-area" id="quizArea"></div>
-
-      <div class="controls">
-        <button id="btnSubmit">Enviar e Corrigir</button>
-        <button id="btnNew" class="secondary">Gerar Novamente (outra variação)</button>
-        <div style="margin-left:auto" class="tiny">Dissertativas serão avaliadas pela IA quando possível.</div>
+      <div style="flex:0 0 180px;">
+        <label>Nº de questões</label>
+        <select id="qCount">
+          <option value="10">10 questões</option>
+          <option value="15" selected>15 questões</option>
+          <option value="20">20 questões</option>
+        </select>
       </div>
-
-      <div id="resultArea" class="hidden"></div>
     </div>
 
-    <footer>
-      Gerador simples para estudo — criado com base no seu arquivo de revisão. Use com responsabilidade.
-    </footer>
+    <div class="controls" style="margin-top:12px">
+      <button id="btnGenerate">Gerar Quiz</button>
+      <button id="btnRegenerate" class="secondary" disabled>Gerar Novamente</button>
+      <button id="btnClear" class="secondary">Limpar Respostas</button>
+      <div style="margin-left:auto" class="tiny">Fonte: Revisão VA2 + conteúdo enviado.</div>
+    </div>
   </div>
+
+  <div id="quizWrap" class="card hidden">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h2 id="quizTitle" style="margin:0">Quiz</h2>
+      <div id="meta" class="pill tiny"></div>
+      <div style="margin-left:auto" class="tiny">Tempo: <span id="timer">--:--</span></div>
+    </div>
+
+    <div class="quiz-area" id="quizArea"></div>
+
+    <div class="controls">
+      <button id="btnSubmit">Enviar e Corrigir</button>
+      <button id="btnNew" class="secondary">Gerar Novamente (outra variação)</button>
+      <div style="margin-left:auto" class="tiny">Dissertativas serão avaliadas pela IA quando possível.</div>
+    </div>
+
+    <div id="resultArea" class="hidden"></div>
+  </div>
+
+  <footer>Feito para estudo — Revisão VA2 (SQL). Responsivo e pronto para mobile 📱</footer>
+</div>
 
 <script>
 /*
-  quiz.html
-  - Usa o conteúdo da Revisão VA2 (embutido abaixo) para criar questões.
-  - Tenta usar a Google Generative Language endpoint via fetch.
-  - Fallback local se a chamada ao AI falhar (CORS ou sem chave).
+  quiz.html - versão completa integrando HTML/CSS/JS.
+  - Gera quizzes com base no conteúdo fornecido (Revisão VA2).
+  - Permite colar Google API Key para avaliação automática de questões dissertativas.
+  - Se a chamada à IA falhar (CORS/erro), faz fallback local mostrando gabarito/critério.
+  - Responsivo e pronto para GitHub Pages.
 */
 
-/* ---------- Conteúdo (extraído do Revisão VA2.docx / texto que você forneceu) ---------- */
+/* ---------- Conteúdo (extraído do Revisão VA2.docx / texto enviado) ---------- */
 const CONTENT = {
   topics: {
     whereHaving: {
@@ -177,7 +281,10 @@ const CONTENT = {
 /* ---------- Helpers ---------- */
 function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
 
-function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
+  return arr;
+}
 
 /* ---------- Quiz generation logic ---------- */
 let currentQuiz = null;
@@ -189,14 +296,18 @@ function pickQuestions(count){
 
   // Use base as seeds, but also create small variations programmatically:
   base.forEach(q=>{
-    pool.push({...q}); // original
-    // Create small variations for MCQ/TF by rephrasing slightly
+    pool.push(JSON.parse(JSON.stringify(q))); // deep copy
+    // Create small variations for TF and MCQ by rephrasing slightly
     if(q.type==='tf'){
-      pool.push({...q, id: q.id + '_v2', text: q.text.replace(/LEFT JOIN/,'LEFT JOIN (versão)')});
+      const v = JSON.parse(JSON.stringify(q));
+      v.id = q.id + '_v2';
+      v.text = q.text.replace(/LEFT JOIN/,'LEFT JOIN (versão)');
+      pool.push(v);
     }
     if(q.type==='mcq' || q.type==='wrong'){
-      // permute choices a bit
-      pool.push({...q, id: q.id + '_v2'});
+      const v = JSON.parse(JSON.stringify(q));
+      v.id = q.id + '_v2';
+      pool.push(v);
     }
   });
 
@@ -208,41 +319,50 @@ function pickQuestions(count){
   synth.push({type:'relation', id:uid('s'), text:'I. WHERE filtra antes do GROUP BY. II. HAVING filtra após agregação.', correctOption:'D', explanation:'Ambas verdadeiras e II justifica I.'});
   synth.forEach(s=>pool.push(s));
 
-  // shuffle and pick
+  // shuffle pool
   shuffle(pool);
+
   // ensure at least 3 essays
-  const essays = pool.filter(q=>q.type==='essay');
-  // if fewer than 3 essays in pool, duplicate the existing essay with rephrase
-  while(essays.length < 3){
-    if(CONTENT.miniSimulado.find(x=>x.type==='essay')){
-      const ex = CONTENT.miniSimulado.filter(x=>x.type==='essay')[0];
-      pool.push({...ex, id: ex.id + '_extra_' + essays.length, text: ex.text + ' (variação)'});
-      essays.push(true);
-    } else break;
+  const essayPool = pool.filter(q=>q.type==='essay');
+  if(essayPool.length < 3){
+    // duplicate existing essay(s) with slight variations
+    const baseEssays = CONTENT.miniSimulado.filter(x=>x.type==='essay');
+    let idx = 0;
+    while(essayPool.length + (idx) < 3 && idx < baseEssays.length){
+      const ex = JSON.parse(JSON.stringify(baseEssays[idx % baseEssays.length]));
+      ex.id = ex.id + '_extra_' + idx;
+      ex.text = ex.text + ' (variação)';
+      pool.push(ex);
+      idx++;
+    }
   }
 
   // Now pick exactly `count`, but ensure at least 3 essays
-  const selected = [];
-  // first add up to 3 essays
-  const essayPool = pool.filter(q=>q.type==='essay');
-  while(selected.length < Math.min(3, essayPool.length) && selected.length < count){
-    selected.push(essayPool.shift());
-  }
-  // then fill the rest with non-essay
-  const others = pool.filter(q=>q.type!=='essay');
-  for(let i=0; selected.length < count && i<others.length; i++){
-    selected.push(others[i]);
+  let selected = [];
+  // pick essays first up to 3
+  const essays = pool.filter(q=>q.type==='essay');
+  for(let i=0; i<Math.min(3, essays.length) && selected.length < count; i++){
+    selected.push(essays[i]);
   }
 
-  // if still not enough (rare), allow more essays
+  // fill with non-essay
+  const nonEssays = pool.filter(q=>q.type!=='essay');
+  let ni = 0;
+  while(selected.length < count && ni < nonEssays.length){
+    selected.push(nonEssays[ni]); ni++;
+  }
+
+  // if still not enough (rare), add remaining pool items
   if(selected.length < count){
     const remaining = pool.filter(q=>!selected.includes(q));
-    for(let i=0; i<remaining.length && selected.length < count; i++) selected.push(remaining[i]);
+    let ri = 0;
+    while(selected.length < count && ri < remaining.length){
+      selected.push(remaining[ri]); ri++;
+    }
   }
 
-  // final shuffle
   shuffle(selected);
-  return selected.slice(0,count);
+  return selected.slice(0, count);
 }
 
 /* ---------- UI rendering ---------- */
@@ -284,7 +404,7 @@ document.getElementById('btnSubmit').addEventListener('click', async ()=>{
       for(const r of radios) if(r.checked) resp = parseInt(r.value,10);
     } else if(q.type==='tf'){
       const v = el.querySelector('select');
-      resp = v ? (v.value==='true') : null;
+      resp = v ? (v.value==='true' ? true : (v.value==='false' ? false : null)) : null;
     } else if(q.type==='relation'){
       const s = el.querySelector('select');
       resp = s ? s.value : null;
@@ -317,9 +437,10 @@ function renderResults(grading){
     html += `<div class="q"><h3>${idx+1}. ${escapeHtml(q.text)}</h3>`;
     if(q.type==='essay'){
       if(g.autoGraded){
-        html += `<div class="tiny">Nota (auto): <strong>${g.score ?? '—'}</strong> / 10 <span class="badge">${g.label ?? ''}</span></div>`;
+        const scoreText = (typeof g.score !== 'undefined' && g.score !== null) ? g.score : '—';
+        html += `<div class="tiny">Nota (auto): <strong>${scoreText}</strong> / 10 <span class="badge">${g.label ?? ''}</span></div>`;
         html += `<div class="explain">${escapeHtml(g.feedback || 'Sem feedback.')}</div>`;
-        if(g.score >= 6) correct++;
+        if(typeof g.score === 'number' && g.score >= 6) correct++;
       } else {
         html += `<div class="tiny">Avaliação automática indisponível — veja a resposta esperada e critérios abaixo.</div>`;
         html += `<div class="explain"><strong>Resposta esperada:</strong> ${escapeHtml(q.answer)}</div>`;
@@ -369,8 +490,6 @@ async function gradeAnswers(answers, apiKey){
         try{
           const prompt = buildEssayGradingPrompt(q.text, q.answer, a.answer);
           const aiResp = await callGenerativeAPI(apiKey, prompt);
-          // Expect AI to return JSON-like: {score: X, feedback: "..."}
-          // We'll try to parse.
           const parsed = tryParseScoreFeedback(aiResp);
           if(parsed){
             record.autoGraded = true;
@@ -382,6 +501,7 @@ async function gradeAnswers(answers, apiKey){
             record.autoGraded = true;
             record.feedback = aiResp;
             record.score = null;
+            record.label = '';
           }
         }catch(err){
           console.warn('AI grading failed',err);
@@ -404,18 +524,16 @@ async function callGenerativeAPI(apiKey, prompt){
   const endpoint = 'https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=' + encodeURIComponent(apiKey);
   const body = {
     prompt: { text: prompt },
-    // optional parameters can be added like temperature, maxOutputTokens
     temperature: 0.2,
     candidateCount: 1,
     maxOutputTokens: 512
   };
 
-  // Use fetch
+  // Try fetch
   const resp = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
-      // Some docs show Authorization Bearer, but when using ?key=... it's okay for quick prototyping.
     },
     body: JSON.stringify(body)
   });
@@ -485,6 +603,7 @@ function generateQuiz(count = 15, apiKey = '', regenerate=false){
   currentQuiz = {questions, apiKey, created: new Date()};
   quizArea.innerHTML = '';
   document.getElementById('btnRegenerate').disabled = false;
+  document.getElementById('btnGenerate').disabled = false;
   quizWrap.classList.remove('hidden');
   meta.textContent = `${questions.length} questões • gerado em ${currentQuiz.created.toLocaleTimeString()}`;
   resultArea.classList.add('hidden'); resultArea.innerHTML='';
@@ -501,12 +620,13 @@ function generateQuiz(count = 15, apiKey = '', regenerate=false){
 
     if(q.type==='mcq' || q.type==='wrong'){
       const choices = q.choices ? q.choices : (q.choices || []);
-      // shuffle choices when generating (but keep index of correct updated? we won't change original to keep gabarito stable)
-      // We'll create radio list with values=0..n-1 corresponding to current order; but we must map back to original answer index.
-      // Simplify: do not shuffle choices to keep consistency. (we could shuffle but then store mapping)
+      // leave order stable to keep gabarito simple
       choices.forEach((c,i)=>{
         const id = uid('opt_');
-        opts.innerHTML += `<label class="option"><input type="radio" name="${domId}_mcq" value="${i}"> ${escapeHtml(c)}</label>`;
+        const label = document.createElement('label');
+        label.className = 'option';
+        label.innerHTML = `<input type="radio" name="${domId}_mcq" value="${i}"> ${escapeHtml(c)}`;
+        opts.appendChild(label);
       });
     } else if(q.type==='tf'){
       opts.innerHTML = `<label class="option"><select><option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option></select></label>`;
@@ -521,7 +641,7 @@ function generateQuiz(count = 15, apiKey = '', regenerate=false){
   });
 
   // start a basic timer (optional)
-  startTimer(20*60); // 20 minutes display (just visual, not enforced)
+  startTimer(20*60); // 20 minutes visual timer
 }
 
 /* ---------- Timer ---------- */
@@ -545,9 +665,9 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
 }
 
-/* ---------- On load: try to enable quick demo without key ---------- */
+/* ---------- On load: initialize minimal state ---------- */
 (function init(){
-  // Pre-generate a quiz preview? no. Wait for user click.
+  // no pre-generation, wait user action
 })();
 
 </script>
