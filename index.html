@@ -6,7 +6,7 @@
   <title>Gerador de Quiz — POO & WEB (Revisão)</title>
   
   <style>
-    /* CSS revertido para a versão anterior (sem word-break e spans complexos) */
+    /* Conteúdo do style.css colado aqui */
     :root{
       --bg1:#071225; --bg2:#07192a; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4;
       --success:#16a34a; --danger:#ef4444; --glass:rgba(255,255,255,0.03); --text:#e6eef6;
@@ -88,18 +88,46 @@
     .q h3{margin:0;font-size:1rem; margin-bottom: 10px;}
     .options{margin-top:8px}
     
-    /* Estilos de opção revertidos */
+    /* Estilo padrão para opções (radio/select) */
     .option { 
-        display:block; /* Volta a ser block */
+        display:block; 
         margin: 8px 0; 
     }
-    /* Estilos de multi-relação revertidos */
-    .multi-relation { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
-    .multi-relation label { 
-        display:flex; /* Mantém flex para alinhar checkbox e texto */
-        gap:8px; 
-        align-items:center; /* Alinha no centro verticalmente */
+    .option input[type="radio"] { /* Pequeno ajuste vertical */
+        margin-right: 5px;
+        vertical-align: middle;
     }
+    .option select {
+        max-width: 200px; /* Limita largura do select V/F */
+    }
+
+    /* --- INÍCIO DA CORREÇÃO MULTIRELATION --- */
+    .multi-relation { 
+        display:flex; 
+        flex-direction:column; 
+        gap: 10px; /* Aumenta espaço vertical entre afirmações */
+        margin-top: 12px; 
+    }
+    .multi-relation label {
+        display: flex; /* Alinha checkbox, número e texto */
+        align-items: flex-start; /* Alinha no topo */
+        gap: 8px; /* Espaço entre os elementos */
+        cursor: pointer;
+    }
+    .multi-relation label input[type="checkbox"] {
+        flex-shrink: 0; /* Impede checkbox de encolher */
+        margin-top: 3px; /* Ajuste fino vertical */
+    }
+    .multi-relation label strong {
+        flex-shrink: 0; /* Impede número de encolher */
+        min-width: 20px; /* Garante espaço para o número */
+        padding-top: 1px; /* Ajuste fino vertical */
+    }
+    .multi-relation label span {
+        word-break: break-word; /* Permite quebrar palavras longas */
+        line-height: 1.4; /* Melhora legibilidade do texto quebrado */
+    }
+    /* --- FIM DA CORREÇÃO MULTIRELATION --- */
 
     textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
     .result-area{margin-top:12px}
@@ -322,7 +350,7 @@
       return selected.slice(0,count);
     }
 
-    /* ---------- Render quiz (Revertido para versão funcional anterior) ---------- */
+    /* ---------- Render quiz (Revertido, sem spans extras) ---------- */
     function generateQuiz(count=15, subject='POO', apiKey='', regenerate=false){
       const questions = pickQuestions(count, subject);
       currentQuiz = { questions, subject, apiKey, created: new Date() };
@@ -352,12 +380,11 @@
           q._shuffled = indexed.map(it=>it.orig); 
           indexed.forEach((it,j)=>{
             const label = document.createElement('label'); label.className='option';
-             // Removido o <span> extra
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`;
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`; // Sem span extra
             opts.appendChild(label);
           });
         } else if(q.type === 'tf'){
-          const sel = document.createElement('select'); sel.className='option';
+          const sel = document.createElement('select'); sel.className='option'; // Classe option aplicada aqui
           sel.style.maxWidth = '200px'; 
           sel.innerHTML = `<option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option>`;
           opts.appendChild(sel);
@@ -372,8 +399,7 @@
           relationOptions.forEach(opt => {
             const label = document.createElement('label'); 
             label.className = 'option';
-            // Removido o <span> extra
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`;
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`; // Sem span extra
             opts.appendChild(label);
           });
           
@@ -398,10 +424,9 @@
           const romans = ['I','II','III','IV','V'];
           for(let i=0;i<statements.length;i++){
             const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
-            const label = document.createElement('label');
+            const label = document.createElement('label'); // A label tem display:flex pelo CSS
             const idcb = uid('cb_');
-             // Removido o <span> extra
-            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> ${escapeHtml(stmt)}`;
+            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> ${escapeHtml(stmt)}`; // Sem span extra
             wrap.appendChild(label);
           }
           if(!Array.isArray(q.answers)) q.answers = q.answers || [];
@@ -480,7 +505,7 @@
               const prompt = buildEssayGradingPrompt(q.text, q.answer || '', res.userAnswer);
               const aiResp = await callGenerativeAPI(apiKey, prompt);
               const parsed = tryParseScoreFeedback(aiResp);
-              if(parsed && typeof parsed.score === 'number'){ // Verifica se score é número
+              if(parsed && typeof parsed.score === 'number'){ 
                 res.autoGraded = true;
                 res.score = parsed.score;
                 res.feedback = parsed.feedback;
@@ -488,10 +513,9 @@
                 res.correct = parsed.score >= 6; 
               } else {
                 res.autoGraded = true;
-                // Usa o feedback do parse (pode conter a resposta crua ou msg de erro)
                 res.feedback = (parsed && parsed.feedback) ? parsed.feedback : aiResp; 
                 res.correct = false; 
-                res.score = null; // Garante que score seja null se não parseado
+                res.score = null; 
               }
             }catch(err){
               console.warn('AI grading failed', err);
@@ -535,7 +559,6 @@
         if(r.type === 'essay'){
           if(r.autoGraded){
             const score = (typeof r.score === 'number') ? r.score : '—';
-            // Usa r.correct para a classe CSS
             const statusClass = r.correct ? 'result-correct' : 'result-wrong'; 
             html += `<div class="tiny ${statusClass}">Nota (auto): <strong>${score}</strong> / 10 <span class="pill">${r.label || ''}</span></div>`;
             html += `<div class="explain"><strong>Feedback:</strong> ${escapeHtml(r.feedback || 'Sem feedback.')}</div>`;
