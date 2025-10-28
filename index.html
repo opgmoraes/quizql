@@ -6,7 +6,7 @@
   <title>Gerador de Quiz — POO & WEB (Revisão)</title>
   
   <style>
-    /* Conteúdo do style.css colado aqui */
+    /* CSS com estilos para .multi-relation restaurados e corrigidos */
     :root{
       --bg1:#071225; --bg2:#07192a; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4;
       --success:#16a34a; --danger:#ef4444; --glass:rgba(255,255,255,0.03); --text:#e6eef6;
@@ -85,24 +85,50 @@
     }
 
     .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:12px}
-    /* Aumenta espaço abaixo do título para melhor leitura das afirmações */
     .q h3{margin:0;font-size:1rem; margin-bottom: 12px;} 
     .options{margin-top:8px}
     
     .option { 
-        display: block; /* Volta a ser block, layout padrão de radio buttons */
+        display: block; 
         margin: 8px 0; 
-        line-height: 1.5; /* Melhora espaçamento vertical do texto */
+        line-height: 1.5; 
     }
     .option input[type="radio"] { 
-        margin-right: 6px; /* Espaço entre radio e texto */
-        vertical-align: middle; /* Alinha radio com a primeira linha do texto */
+        margin-right: 6px; 
+        vertical-align: middle; 
     }
     .option select {
         max-width: 200px; 
     }
     
-    /* Remove estilos de .multi-relation pois não existe mais */
+    /* --- Estilos para multiRelation RESTAURADOS E CORRIGIDOS --- */
+    .multi-relation { 
+        display:flex; 
+        flex-direction:column; 
+        gap: 10px; /* Espaço vertical entre afirmações */
+        margin-top: 12px; 
+    }
+    .multi-relation label {
+        display: flex; /* Alinha checkbox, número e texto */
+        align-items: flex-start; /* Alinha no topo para textos longos */
+        gap: 8px; /* Espaço entre os elementos */
+        cursor: pointer;
+        line-height: 1.4; /* Melhora legibilidade */
+    }
+    .multi-relation label input[type="checkbox"] {
+        flex-shrink: 0; /* Impede checkbox de encolher */
+        margin-top: 3px; /* Ajuste fino vertical */
+    }
+    .multi-relation label strong {
+        flex-shrink: 0; /* Impede número de encolher */
+        min-width: 20px; /* Garante espaço para o número romano */
+        padding-top: 1px; /* Ajuste fino vertical */
+        font-weight: 700;
+    }
+    .multi-relation label span { /* O span contém o texto da afirmação */
+        word-break: break-word; /* Permite quebrar palavras longas */
+    }
+    /* --- FIM DOS ESTILOS multiRelation --- */
 
     textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
     .result-area{margin-top:12px}
@@ -207,7 +233,7 @@
   <script>
     /* Conteúdo do script.js colado aqui */
 
-    /* ---------- Conteúdo (POO - Modificado multiRelation para MCQ) ---------- */
+    /* ---------- Conteúdo (POO - Revertido para multiRelation original) ---------- */
     const POO_CONTENT = {
       miniSimulado: [
         { type: "essay", id: "p_essay1", text: "Uma classe RelatorioService possui um método que, baseado em um parâmetro, usa uma série de if/else para decidir se o relatório deve ser gerado em PDF, Excel ou CSV. Explique qual princípio SOLID isso viola e por quê.", answer: "Viola o Princípio Aberto/Fechado (OCP). Porque para adicionar um novo formato de relatório (ex: HTML), o desenvolvedor é obrigado a modificar a classe RelatorioService adicionando um novo else if." },
@@ -220,24 +246,18 @@
         { type: "mcq", id: "p_mcq2", text: "No padrão MVC, qual camada é responsável por conter os dados e as regras de negócio do sistema?", choices: ["View", "Controller", "Model", "Service"], answerIndex: 2, explanation: "A resposta correta é C: O Model contém os dados e as regras de negócio." }, 
         { type: "wrong", id: "p_w1", text: "Sobre Arquitetura de Microsserviços, marque a afirmativa INCORRETA:", choices: ["Ajuda a escalar partes específicas de um sistema financeiro, como o processamento de transações.", "É um sistema dividido em serviços menores e independentes.", "Um desafio comum é a complexidade na comunicação entre os serviços.", "É considerada uma arquitetura mais simples de implantar e gerenciar do que um Monolito."], answerIndex: 3, explanation: "A afirmativa D é incorreta. Microsserviços são mais complexos de implantar e gerenciar do que um Monolito, embora o Monolito seja mais simples *inicialmente*." }, 
         { type: "wrong", id: "p_w2", text: "Sobre o Princípio da Inversão de Dependência (DIP), marque a afirmativa INCORRETA:", choices: ["Módulos de alto nível devem depender de abstrações (interfaces).", "Módulos de baixo nível (classes concretas) devem implementar as abstrações.", "NotificationManager instanciando new SmsService() é uma violação do DIP.", "O principal benefício do DIP é garantir que a classe filha possa substituir a classe mãe sem quebrar o sistema."], answerIndex: 3, explanation: "A afirmativa D é incorreta. O benefício descrito (filha substituir a mãe) é do Princípio da Substituição de Liskov (LSP), não do DIP." }, 
-        // Convertido de multiRelation para mcq
+        // Revertido para multiRelation original
         { 
-          type: "mcq", 
-          id: "p_mult1_mcq", 
+          type: "multiRelation", 
+          id: "p_mult1", 
           text: "Considere as afirmações sobre interfaces (ISP):\nI. Uma interface Notificador com enviarEmail(), enviarSMS() e enviarPush() força implementações a métodos que podem não usar.\nII. Isso viola o ISP.\nIII. Segregar em interfaces menores (INotificadorEmail, INotificadorSMS) é recomendado.\nIV. SRP é aplicável a interfaces e diz que interfaces não devem ter mais de um método.\nV. Uma interface 'gorda' melhora a reutilização em todos os casos.", 
-          choices: [
-              "A) Apenas as afirmações I e II estão corretas.",
-              "B) Apenas as afirmações I, II e IV estão corretas.",
-              "C) Apenas as afirmações I, II e III estão corretas.",
-              "D) Todas as afirmações estão corretas."
-          ],
-          answerIndex: 2, // C é a correta (I, II, III)
+          answers: ["I","II","III"], // Resposta original
           explanation: "I, II e III são verdadeiras; IV (ISP fala sobre interfaces 'gordas', não SRP) e V são falsas." 
         }
       ]
     };
 
-    /* ---------- Conteúdo (WEB - Modificado multiRelation para MCQ) ---------- */
+    /* ---------- Conteúdo (WEB - Revertido para multiRelation original) ---------- */
     const WEB_CONTENT = {
       miniSimulado: [
         { type: "essay", id: "w_essay1", text: "Explique o que é uma API e como ela facilita a integração entre dois sistemas, como um aplicativo de celular e um servidor web.", answer: "Uma API é um conjunto de regras que permite a comunicação entre sistemas. Ela facilita a integração permitindo que o aplicativo de celular (cliente) envie requisições (ex: GET /produtos) para o servidor. O servidor processa o pedido, busca no banco de dados e retorna os dados em JSON, que o aplicativo entende e exibe ao usuário." }, 
@@ -250,18 +270,12 @@
         { type: "mcq", id: "w_mcq2", text: "Qual é a forma correta de lidar com um erro que pode ocorrer em uma função async no Node.js?", choices: ["Usando if (error) após a chamada da função.", "Usando o método .catch() no final da chamada await.", "Envolvendo a chamada await (que pode falhar) dentro de um bloco try...catch.", "O await já trata os erros automaticamente, não sendo necessário nenhum bloco extra."], answerIndex: 2, explanation: "A resposta correta é C: A forma padrão de tratar erros com async/await é usando try...catch." }, 
         { type: "wrong", id: "w_w1", text: "Sobre os verbos HTTP e APIs RESTful, marque a afirmativa INCORRETA:", choices: ["GET é usado para buscar dados de um recurso.", "DELETE é usado para remover um recurso.", "POST é usado para atualizar completamente um recurso que já existe.", "Uma boa prática de API RESTful é usar substantivos nos endpoints, como /usuarios."], answerIndex: 2, explanation: "A afirmativa C é incorreta. POST é usado para criar um novo recurso; PUT (ou PATCH) é usado para atualizar." }, 
         { type: "wrong", id: "w_w2", text: "Sobre o processo de autenticação no backend, marque a afirmativa INCORRETA:", choices: ["O backend recebe os dados de login (email e senha) do frontend.", "O backend deve usar criptografia ao armazenar e verificar senhas.", "Uma boa prática é armazenar a senha do usuário em texto puro no banco de dados para facilitar a verificação.", "O servidor retorna uma resposta de sucesso (geralmente com um token) ou uma resposta de erro."], answerIndex: 2, explanation: "A afirmativa C é incorreta. Armazenar senhas em texto puro é uma falha grave de segurança." }, 
-        // Convertido de multiRelation para mcq
+        // Revertido para multiRelation original
         { 
-          type: "mcq", 
-          id: "w_mult1_mcq", 
+          type: "multiRelation", 
+          id: "w_mult1", 
           text: "Considere as afirmações sobre JSON e JS:\nI. JSON é uma string textual.\nII. JSON.parse() converte string JSON em objeto JS.\nIII. JSON.stringify() converte objeto JS para string JSON.\nIV. Em JSON, as chaves não precisam estar entre aspas.\nV. JSON e objeto JS são o mesmo sem conversão.", 
-          choices: [
-              "A) Apenas as afirmações I e II estão corretas.",
-              "B) Apenas as afirmações I, II e IV estão corretas.",
-              "C) Apenas as afirmações I, II e III estão corretas.",
-              "D) Apenas as afirmações IV e V estão corretas."
-          ],
-          answerIndex: 2, // C é a correta (I, II, III)
+          answers: ["I","II","III"], // Resposta original
           explanation: "I, II e III verdadeiras; IV (chaves JSON *precisam* de aspas) e V são falsas." 
         }
       ]
@@ -305,7 +319,7 @@
       document.querySelectorAll('#quizArea input[type=radio]').forEach(i=>i.checked=false);
       document.querySelectorAll('#quizArea textarea, #quizArea input[type=text]').forEach(i=>i.value='');
       document.querySelectorAll('#quizArea select').forEach(s=>s.selectedIndex=0);
-      document.querySelectorAll('#quizArea input[type=checkbox]').forEach(c=>c.checked=false); // Mantido por segurança, mas não deve haver checkboxes
+      document.querySelectorAll('#quizArea input[type=checkbox]').forEach(c=>c.checked=false); // Mantém para limpar checkboxes
     });
     btnSubmit.addEventListener('click', async ()=> {
       if(!currentQuiz) return;
@@ -376,7 +390,7 @@
       return selected.slice(0,count);
     }
 
-    /* ---------- Render quiz (Removido multiRelation) ---------- */
+    /* ---------- Render quiz (Restaurado multiRelation com span para texto) ---------- */
     function generateQuiz(count=15, subject='POO', apiKey='', regenerate=false){
       const questions = pickQuestions(count, subject);
       currentQuiz = { questions, subject, apiKey, created: new Date() };
@@ -391,8 +405,10 @@
         const card = document.createElement('div'); card.className = 'q'; card.id = domId;
         const title = document.createElement('h3'); 
         
-        // Exibe o texto completo para todas as questões agora
-        title.innerHTML = `${idx+1}. ${q.text}`; 
+        // Só define o título aqui se NÃO for multiRelation (será definido dentro do bloco)
+        if (q.type !== 'multiRelation') { 
+            title.innerHTML = `${idx+1}. ${q.text}`;
+        }
         card.appendChild(title);
 
         const opts = document.createElement('div'); opts.className = 'options';
@@ -428,9 +444,37 @@
             opts.appendChild(label);
           });
           
-        } // Bloco multiRelation REMOVIDO 
-        
-        else if(q.type === 'essay'){
+        } else if(q.type === 'multiRelation'){ // Lógica restaurada
+          const wrap = document.createElement('div'); wrap.className='multi-relation';
+          const lines = q.text.split('\n').map(s=>s.trim()).filter(Boolean);
+          let statements = [];
+          let prompt = q.text; 
+
+          if (q.statements && Array.isArray(q.statements)) {
+            statements = q.statements.slice();
+            prompt = lines[0] || q.text; 
+          } else if (lines.length > 1) {
+            prompt = lines[0]; 
+            statements = lines.slice(1);
+          } else {
+            statements = q.statements ? q.statements.slice() : ['I. (afirmação 1)','II. (afirmação 2)','III. (afirmação 3)','IV. (afirmação 4)','V. (afirmação 5)'];
+          }
+          
+          title.innerHTML = `${idx+1}. ${prompt}`; // Define o título aqui
+          
+          const romans = ['I','II','III','IV','V'];
+          for(let i=0;i<statements.length;i++){
+            const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
+            const label = document.createElement('label'); 
+            const idcb = uid('cb_');
+            // Adicionado span APENAS ao redor do texto da afirmação
+            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> <span>${escapeHtml(stmt)}</span>`; 
+            wrap.appendChild(label);
+          }
+          if(!Array.isArray(q.answers)) q.answers = q.answers || [];
+          opts.appendChild(wrap);
+          
+        } else if(q.type === 'essay'){
           const ta = document.createElement('textarea'); ta.className='answer'; ta.placeholder = 'Escreva sua resposta aqui...';
           opts.appendChild(ta);
         } else { opts.appendChild(document.createTextNode('Tipo não suportado.')); }
@@ -442,7 +486,7 @@
       startTimer(20*60);
     }
 
-    /* ---------- Grade answers (Removido multiRelation) ---------- */
+    /* ---------- Grade answers (Restaurado multiRelation) ---------- */
     async function gradeAnswers(apiKey){ 
        if(!currentQuiz) return [];
       const results = [];
@@ -487,9 +531,15 @@
           res.explanation = q.explanation || '';
           res.autoGraded = true;
           
-        } // Bloco multiRelation REMOVIDO
-        
-        else if(q.type === 'essay'){
+        } else if(q.type === 'multiRelation'){ // Lógica restaurada
+          const checked = Array.from(el.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.dataset.label).filter(Boolean);
+          res.userAnswer = checked;
+          const expected = (q.answers || []).map(x=>String(x).trim().toUpperCase());
+          res.correct = arraysEqualIgnoreOrder(expected, checked || []);
+          res.explanation = q.explanation || '';
+          res.autoGraded = true;
+          
+        } else if(q.type === 'essay'){
           const ta = el.querySelector('textarea');
           res.userAnswer = ta ? ta.value.trim() : '';
           if(apiKey && res.userAnswer){
