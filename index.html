@@ -87,7 +87,35 @@
     .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:12px}
     .q h3{margin:0;font-size:1rem; margin-bottom: 10px;}
     .options{margin-top:8px}
-    .option{display:block;margin:8px 0}
+    
+    /* --- INÍCIO DA CORREÇÃO DE RESPONSIVIDADE --- */
+    .option{
+      display:flex; /* Muda para flexbox */
+      gap:8px; /* Espaço entre o radio/check e o texto */
+      align-items:flex-start; /* Alinha no topo */
+      margin: 10px 0;
+    }
+    .option input[type="radio"] {
+      flex-shrink: 0; /* Impede o radio button de encolher */
+      margin-top: 3px; /* Ajuste fino de alinhamento vertical */
+    }
+    
+    .multi-relation { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .multi-relation label {
+      display:flex; /* Muda para flexbox */
+      gap:8px; /* Espaço */
+      align-items:flex-start; /* Alinha no topo */
+    }
+    .multi-relation label input[type="checkbox"] {
+      flex-shrink: 0; /* Impede o checkbox de encolher */
+      margin-top: 3px; /* Ajuste fino */
+    }
+    .multi-relation label strong {
+      flex-shrink: 0; /* Impede o "I." de encolher */
+    }
+    /* O <span> que será adicionado via JS vai quebrar a linha naturalmente */
+    /* --- FIM DA CORREÇÃO DE RESPONSIVIDADE --- */
+
     textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
     .result-area{margin-top:12px}
     .summary{padding:10px;border-radius:8px;background:linear-gradient(90deg, rgba(14,165,164,0.05), transparent)}
@@ -96,8 +124,6 @@
     .explain{margin-top:8px;color:var(--muted);font-size:0.93rem}
     .footer{text-align:center;color:var(--muted);font-size:0.9rem;margin-top:8px}
 
-    .multi-relation { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
-    .multi-relation label { display:flex; gap:8px; align-items:center; }
 
     @media (max-width: 900px){
       .form-grid{grid-template-columns:1fr 180px 140px; }
@@ -108,6 +134,9 @@
       .actions{flex-direction:column}
       .header h1{font-size:1.15rem}
       .pill{font-size:0.85rem}
+      
+      /* Correção de responsividade bônus */
+      .quiz-header { flex-wrap: wrap; gap: 6px; }
     }
   </style>
 </head>
@@ -167,7 +196,9 @@
           <h2 id="quizTitle">Quiz</h2>
           <div class="quiz-meta">
             <span id="meta" class="pill tiny"></span>
-            <span class="tiny">Tempo (visual): <strong id="timer">--:--</strong></span>
+          </div>
+          <div style="margin-left: auto;">
+             <span class="tiny">Tempo (visual): <strong id="timer">--:--</strong></span>
           </div>
         </div>
 
@@ -416,19 +447,11 @@
     });
 
     
-    /* ---------- Question selection (CORRIGIDA E OTIMIZADA) ----------
-      Esta função agora garante que o número exato de 'count' seja retornado.
-      Se 'count' for 15 e a piscina só tiver 12, ela adicionará 3 duplicatas
-      aleatórias da piscina base para preencher o total.
-    */
+    /* ---------- Question selection (CORRIGIDA E OTIMIZADA) ---------- */
     function pickQuestions(count, subject){
-      // 1. Obter a piscina base (11 questões)
       const poolBase = (subject === 'POO') ? POO_CONTENT.miniSimulado.slice() : WEB_CONTENT.miniSimulado.slice();
-      
-      // 2. Criar uma piscina de trabalho (deep copy)
       const pool = poolBase.map(q => JSON.parse(JSON.stringify(q)));
       
-      // 3. Aumentar a piscina de trabalho se tiver poucas dissertativas (eleva para 12)
       let essays = pool.filter(q=>q.type==='essay');
       if(essays.length < 3){
         const base = pool.filter(q=>q.type==='essay');
@@ -444,13 +467,10 @@
         }
       }
       
-      // 4. Embaralhar a piscina de trabalho (agora com 12 questões)
       shuffle(pool);
       
-      // 5. Iniciar a seleção
       const selected = [];
       
-      // 6. Tentar preencher com questões "únicas" primeiro
       const essayList = pool.filter(q=>q.type==='essay');
       for(let i=0;i<Math.min(3, essayList.length) && selected.length < count;i++) {
           selected.push(essayList[i]);
@@ -463,30 +483,24 @@
           ri++; 
       }
       
-      // 7. *** OTIMIZAÇÃO E CORREÇÃO AQUI ***
-      // Se 'count' (ex: 15) for MAIOR que o que selecionamos (ex: 12),
-      // preenchemos o resto com duplicatas aleatórias da piscina BASE.
+      // OTIMIZAÇÃO: Se 'count' for maior que a piscina, preenche com duplicatas
       if(selected.length < count){
         console.warn(`Piscina (${selected.length}) menor que o solicitado (${count}). Adicionando duplicatas.`);
-        const needed = count - selected.length; // ex: 15 - 12 = 3
+        const needed = count - selected.length;
         
         for(let j=0; j < needed; j++) {
-            // Pega uma questão aleatória da piscina base (11 questões)
             const randQ = poolBase[Math.floor(Math.random() * poolBase.length)];
-            // Cria uma nova cópia
             const newDup = JSON.parse(JSON.stringify(randQ));
-            // Dá um ID único
             newDup.id = newDup.id + '_dup_fill_' + j;
             selected.push(newDup);
         }
       }
       
-      // 8. Embaralhar a lista final e retornar o número exato
       shuffle(selected);
       return selected.slice(0,count);
     }
 
-    /* ---------- Render quiz ---------- */
+    /* ---------- Render quiz (CORRIGIDO PARA RESPONSIVIDADE) ---------- */
     function generateQuiz(count=15, subject='POO', apiKey='', regenerate=false){
       const questions = pickQuestions(count, subject);
       currentQuiz = { questions, subject, apiKey, created: new Date() };
@@ -516,7 +530,8 @@
           q._shuffled = indexed.map(it=>it.orig); 
           indexed.forEach((it,j)=>{
             const label = document.createElement('label'); label.className='option';
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`;
+            // Adicionado <span> para quebra de linha
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> <span>${escapeHtml(it.text)}</span>`;
             opts.appendChild(label);
           });
         } else if(q.type === 'tf'){
@@ -534,7 +549,8 @@
           relationOptions.forEach(opt => {
             const label = document.createElement('label'); 
             label.className = 'option';
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`;
+            // Adicionado <span> para quebra de linha
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> <span>${escapeHtml(opt.text)}</span>`;
             opts.appendChild(label);
           });
           
@@ -561,7 +577,8 @@
             const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
             const label = document.createElement('label');
             const idcb = uid('cb_');
-            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> ${escapeHtml(stmt)}`;
+            // Adicionado <span> para quebra de linha
+            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> <span>${escapeHtml(stmt)}</span>`;
             wrap.appendChild(label);
           }
           if(!Array.isArray(q.answers)) q.answers = q.answers || [];
@@ -798,5 +815,7 @@
     })();
   </script>
   
+</body>
+</html>
 </body>
 </html>
