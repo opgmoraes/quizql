@@ -1,675 +1,802 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Quiz IA – Revisão VA2 (SQL)</title>
-<style>
-  :root {
-    --bg:#0f1724; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4;
-    --success:#16a34a; --danger:#ef4444; --neutral:#e6eef6;
-    --glass:rgba(255,255,255,0.05);
-    font-family: 'Inter', system-ui, sans-serif;
-  }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerador de Quiz — POO & WEB (Revisão)</title>
+  
+  <style>
+    /* Conteúdo do style.css colado aqui */
+    :root{
+      --bg1:#071225; --bg2:#07192a; --card:#0b1320; --muted:#94a3b8; --accent:#0ea5a4;
+      --success:#16a34a; --danger:#ef4444; --glass:rgba(255,255,255,0.03); --text:#e6eef6;
+      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
 
-  html, body {
-    margin:0; padding:0;
-    background: radial-gradient(ellipse at top left, rgba(14,165,164,0.08), transparent 20%),
-                linear-gradient(180deg, #071225, #07192a);
-    color: var(--neutral);
-    -webkit-font-smoothing: antialiased;
-    min-height:100vh;
-  }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:
+      radial-gradient(ellipse at top left, rgba(14,165,164,0.06), transparent 20%),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:var(--text); 
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
 
-  .container {
-    max-width: 980px;
-    margin: 18px auto;
-    padding: 16px;
-  }
+    .hidden {
+      display: none;
+    }
 
-  h1 {
-    font-size: 1.6rem;
-    margin-bottom: 4px;
-  }
+    .wrap{max-width:980px;margin:22px auto;padding:16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .header h1{margin:0;font-size:1.4rem}
+    .lead{color:var(--muted);margin:6px 0 0;font-size:0.95rem}
+    .pill{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:999px;font-size:0.9rem}
 
-  p.lead {
-    color: var(--muted);
-    margin-top: 6px;
-  }
+    .form-grid{display:grid;grid-template-columns:1fr 220px 160px 220px;gap:12px;align-items:end}
+    .form-grid label{font-size:0.85rem;color:var(--muted);margin-bottom:6px;display:block}
 
-  .card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.5);
-  }
+    input,select,textarea{
+      width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
+      background:var(--glass);color:var(--text);
+      outline: 2px solid transparent; 
+      outline-offset: 2px;
+      transition: outline-color 0.2s;
+    }
+    input:focus-visible, 
+    select:focus-visible, 
+    textarea:focus-visible {
+      outline-color: var(--accent);
+    }
 
-  label {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 6px;
-    display:block;
-  }
+    .tiny{font-size:0.82rem;color:var(--muted)}
+    .actions{display:flex;gap:8px}
 
-  input, select, textarea {
-    width: 100%;
-    border: 1px solid var(--glass);
-    border-radius: 8px;
-    background: var(--glass);
-    color: var(--neutral);
-    padding: 10px;
-    font-size: 1rem;
-    box-sizing: border-box;
-  }
+    button{background:var(--accent);color:#032;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer; transition: filter 0.2s, transform 0.1s;}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)}
 
-  textarea { min-height: 90px; }
+    button:hover {
+      filter: brightness(1.15);
+    }
+    button:active {
+      filter: brightness(0.9);
+      transform: translateY(1px);
+    }
+    button:disabled {
+      background: var(--glass);
+      color: var(--muted);
+      cursor: not-allowed;
+      filter: none;
+      transform: none;
+    }
+    button.secondary:disabled {
+        background: transparent;
+        border-color: var(--glass);
+    }
 
-  button {
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: #032;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+    .notice{margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
 
-  button:hover { background: #10b0b0; }
-  button.secondary {
-    background: transparent;
-    border: 1px solid var(--glass);
-    color: var(--neutral);
-  }
+    .quiz-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .quiz-area{margin-top:12px}
 
-  .notice {
-    background: var(--glass);
-    padding: 10px;
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 14px;
-  }
+    .quiz-area + .controls {
+      margin-top: 12px;
+    }
 
-  .flex { display:flex; gap:12px; flex-wrap: wrap; align-items: flex-end; }
+    .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:12px}
+    .q h3{margin:0;font-size:1rem; margin-bottom: 10px;}
+    .options{margin-top:8px}
+    .option{display:block;margin:8px 0}
+    textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
+    .result-area{margin-top:12px}
+    .summary{padding:10px;border-radius:8px;background:linear-gradient(90deg, rgba(14,165,164,0.05), transparent)}
+    .result-correct{color:var(--success);font-weight:700}
+    .result-wrong{color:var(--danger);font-weight:700}
+    .explain{margin-top:8px;color:var(--muted);font-size:0.93rem}
+    .footer{text-align:center;color:var(--muted);font-size:0.9rem;margin-top:8px}
 
-  .quiz-area { margin-top: 16px; }
-  .q { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
-  .q h3 { font-size: 1rem; margin: 0 0 6px; }
+    .multi-relation { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .multi-relation label { display:flex; gap:8px; align-items:center; }
 
-  .option { display:block; margin: 6px 0; }
-  .summary { background: rgba(14,165,164,0.07); border-radius: 8px; padding: 10px; margin-top: 10px; }
-
-  .result-correct { color: var(--success); font-weight: 600; }
-  .result-wrong { color: var(--danger); font-weight: 600; }
-  .explain { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
-
-  .controls { display:flex; gap:8px; flex-wrap: wrap; margin-top:10px; }
-  .tiny { font-size: 0.8rem; color: var(--muted); }
-
-  footer {
-    text-align:center;
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin-top: 24px;
-  }
-
-  /* ---- Responsividade ---- */
-  @media (max-width: 768px) {
-    h1 { font-size: 1.4rem; }
-    .container { padding: 12px; }
-    button, select, input, textarea { font-size: 0.95rem; }
-    .flex { flex-direction: column; align-items: stretch; }
-    .controls { flex-direction: column; }
-    .q h3 { font-size: 0.95rem; }
-  }
-
-  @media (max-width: 480px) {
-    h1 { font-size: 1.2rem; }
-    .q { padding: 10px; }
-  }
-
-  .hidden { display:none; }
-
-  .badge {
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.03);
-    font-size:12px;
-    margin-left:6px;
-  }
-
-  .pill {
-    padding:6px 10px;
-    border-radius:999px;
-    background:rgba(255,255,255,0.02);
-    font-size:13px;
-  }
-</style>
+    @media (max-width: 900px){
+      .form-grid{grid-template-columns:1fr 180px 140px; }
+      .header{flex-direction:column; align-items:flex-start}
+    }
+    @media (max-width: 640px){
+      .form-grid{grid-template-columns:1fr; }
+      .actions{flex-direction:column}
+      .header h1{font-size:1.15rem}
+      .pill{font-size:0.85rem}
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="card">
-    <h1>Gerador de Quiz – Revisão VA2 (SQL)</h1>
-    <p class="lead">Gere quizzes personalizados sobre WHERE/HAVING, JOINs, Views e Subqueries. Escolha a quantidade, cole sua chave da Google AI e pratique.</p>
-
-    <div class="notice">
-      ⚠️ <strong>Aviso:</strong> A chave API colada aqui é usada apenas localmente no navegador para chamadas diretas à API. Não será armazenada. Use somente para estudo/testes.
-    </div>
-
-    <div class="flex">
-      <div style="flex:1;">
-        <label>Google API Key (opcional)</label>
-        <input id="apiKey" type="text" placeholder="Cole aqui sua API Key (ex: AIza...)" />
+  
+  <div class="wrap">
+    <header class="header card">
+      <div>
+        <h1>Gerador de Quiz — Revisão POO &amp; WEB</h1>
+        <p class="lead">Escolha a matéria, cole sua API Key do Google (opcional), selecione o número de questões e pratique.</p>
       </div>
-      <div style="flex:0 0 180px;">
-        <label>Nº de questões</label>
-        <select id="qCount">
-          <option value="10">10 questões</option>
-          <option value="15" selected>15 questões</option>
-          <option value="20">20 questões</option>
-        </select>
+      <div class="meta">
+        <div class="pill">Responsivo • Pronto para estudo</div>
       </div>
-    </div>
+    </header>
 
-    <div class="controls" style="margin-top:12px">
-      <button id="btnGenerate">Gerar Quiz</button>
-      <button id="btnRegenerate" class="secondary" disabled>Gerar Novamente</button>
-      <button id="btnClear" class="secondary">Limpar Respostas</button>
-      <div style="margin-left:auto" class="tiny">Fonte: Revisão VA2 + conteúdo enviado.</div>
-    </div>
+    <main>
+      <section class="card controls">
+        <div class="form-grid">
+          <div>
+            <label for="apiKey">Google API Key (opcional)</label>
+            <input id="apiKey" type="text" placeholder="Cole sua chave aqui (ex: AIza...)">
+            <small class="tiny">Usada apenas localmente no navegador para avaliar respostas dissertativas.</small>
+          </div>
+
+          <div>
+            <label for="subject">Matéria</label>
+            <select id="subject">
+              <option value="POO" selected>POO (SOLID, Arquitetura, MVC)</option>
+              <option value="WEB">WEB (HTTP, JSON, Node.js, APIs)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="qCount">Número de questões</label>
+            <select id="qCount">
+              <option value="10">10 questões</option>
+              <option value="15" selected>15 questões</option>
+              <option value="20">20 questões</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button id="btnGenerate" type="button">Gerar Quiz</button>
+            <button id="btnRegenerate" type="button" class="secondary" disabled>Gerar Novamente</button>
+            <button id="btnClear" type="button" class="secondary">Limpar Respostas</button>
+          </div>
+        </div>
+
+        <div class="notice">
+          <strong>Atenção:</strong> Colar sua API Key no navegador expõe a chave localmente — use apenas para estudo pessoal. Em produção, mova chamadas para um backend.
+        </div>
+      </section>
+
+      <section id="quizSection" class="card hidden">
+        <div class="quiz-header">
+          <h2 id="quizTitle">Quiz</h2>
+          <div class="quiz-meta">
+            <span id="meta" class="pill tiny"></span>
+            <span class="tiny">Tempo (visual): <strong id="timer">--:--</strong></span>
+          </div>
+        </div>
+
+        <div id="quizArea" class="quiz-area"></div>
+
+        <div class="controls actions"> 
+          <button id="btnSubmit" type="button">Enviar e Corrigir</button>
+          <button id="btnNew" type="button" class="secondary">Gerar Novamente (outra variação)</button>
+        </div>
+
+        <div id="resultArea" class="result-area hidden"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small>Feito para estudo — use com responsabilidade. Conteúdos: POO e WEB (baseados no seu material).</small>
+    </footer>
   </div>
 
-  <div id="quizWrap" class="card hidden">
-    <div style="display:flex;align-items:center;gap:8px">
-      <h2 id="quizTitle" style="margin:0">Quiz</h2>
-      <div id="meta" class="pill tiny"></div>
-      <div style="margin-left:auto" class="tiny">Tempo: <span id="timer">--:--</span></div>
-    </div>
+  <script>
+    /* Conteúdo do script.js colado aqui */
 
-    <div class="quiz-area" id="quizArea"></div>
-
-    <div class="controls">
-      <button id="btnSubmit">Enviar e Corrigir</button>
-      <button id="btnNew" class="secondary">Gerar Novamente (outra variação)</button>
-      <div style="margin-left:auto" class="tiny">Dissertativas serão avaliadas pela IA quando possível.</div>
-    </div>
-
-    <div id="resultArea" class="hidden"></div>
-  </div>
-
-  <footer>Feito para estudo — Revisão VA2 (SQL). Responsivo e pronto para mobile 📱</footer>
-</div>
-
-<script>
-/*
-  quiz.html - versão completa integrando HTML/CSS/JS.
-  - Gera quizzes com base no conteúdo fornecido (Revisão VA2).
-  - Permite colar Google API Key para avaliação automática de questões dissertativas.
-  - Se a chamada à IA falhar (CORS/erro), faz fallback local mostrando gabarito/critério.
-  - Responsivo e pronto para GitHub Pages.
-*/
-
-/* ---------- Conteúdo (extraído do Revisão VA2.docx / texto enviado) ---------- */
-const CONTENT = {
-  topics: {
-    whereHaving: {
-      title: "Filtragem (WHERE vs HAVING)",
-      bullets: [
-        "Use WHERE para filtrar registros individuais (linhas).",
-        "Use HAVING para filtrar grupos (resultados de funções de agregação como COUNT, SUM, AVG).",
-        "WHERE é processado ANTES do GROUP BY.",
-        "HAVING é processado DEPOIS do GROUP BY.",
-        "Não pode usar funções de agregação na cláusula WHERE; use HAVING para isso."
-      ]
-    },
-    views: {
-      title: "Views (Tabelas Virtuais)",
-      bullets: [
-        "É uma tabela virtual, baseada no resultado de um SELECT armazenado.",
-        "Vantagens: Segurança (restringe colunas/linhas) e Simplificação (esconde JOINs e cálculos complexos).",
-        "Uma View não é uma cópia física dos dados (normalmente).",
-        "Comando: CREATE VIEW nome_da_view AS SELECT ...."
-      ]
-    },
-    joins: {
-      title: "Junções (JOINs)",
-      bullets: [
-        "INNER JOIN: retorna apenas registros que existem nas duas tabelas.",
-        "LEFT JOIN: retorna todos os registros da tabela da esquerda e preenche com NULL quando não houver correspondência na direita.",
-        "RIGHT JOIN: retorna todos os registros da tabela da direita.",
-        "O otimizador do SGBD pode reorganizar JOINs para performance; a ordem escrita afeta legibilidade."
-      ]
-    },
-    subqueries: {
-      title: "Subconsultas (Subqueries)",
-      bullets: [
-        "É uma consulta SELECT dentro de outra consulta.",
-        "Podem ser usadas em SELECT, FROM, WHERE e HAVING.",
-        "Usadas com IN para comparar com múltiplos valores.",
-        "Não são sempre melhores ou piores que JOINs; depende do caso."
-      ]
-    }
-  },
-
-  // Mini-simulado (base para gerar perguntas e gabarito)
-  miniSimulado: [
-    // dissertativas (2)
-    { type: "essay", id: "d1", text: "Explique a diferença fundamental de uso e ordem entre as cláusulas WHERE e HAVING em uma consulta SQL.", answer: "WHERE filtra linhas individuais e é executado antes do GROUP BY. HAVING filtra grupos (após agregação) e é executado depois do GROUP BY. HAVING filtra funções (SUM, COUNT), WHERE não." },
-    { type: "essay", id: "d2", text: "O que é uma View e quais são suas duas principais vantagens práticas?", answer: "Uma View é uma tabela virtual baseada em um SELECT armazenado. Vantagens: 1) Segurança (restringir acesso a colunas/linhas) e 2) Simplificação (esconder JOINs e cálculos complexos)." },
-
-    // V/F (2)
-    { type: "tf", id: "vf1", text: "Um LEFT JOIN da Tabela A (esquerda) para a Tabela B (direita) retornará apenas os registros que existem em ambas as tabelas.", answer: false, explanation: "Isso descreve um INNER JOIN. LEFT JOIN retorna todos da esquerda, preenchendo com NULL quando não houver correspondência." },
-    { type: "tf", id: "vf2", text: "A cláusula WHERE é processada antes da cláusula GROUP BY, enquanto a cláusula HAVING é processada depois.", answer: true, explanation: "WHERE filtra linhas antes do GROUP BY; HAVING filtra resultados agregados depois do GROUP BY." },
-
-    // Relação (2)
-    { type: "relation", id: "r1", text: "I. A cláusula HAVING é necessária para filtrar resultados baseados em funções de agregação como COUNT ou SUM.  II. A cláusula WHERE não pode filtrar diretamente resultados de funções agregadas.", correctOption: "D", explanation: "Ambas são verdadeiras; a II justifica a I." },
-    { type: "relation", id: "r2", text: "I. Views são usadas para garantir segurança, permitindo restringir quais colunas e linhas os usuários podem visualizar. II. Elas são tabelas virtuais que armazenam fisicamente uma cópia duplicada dos dados para simplificar os JOINs.", correctOption: "B", explanation: "I é verdadeira; II é falsa (Views são virtuais, não cópias físicas)." },
-
-    // Marque a correta (2)
-    { type: "mcq", id: "m1", text: "Em qual das seguintes cláusulas NÃO é um local comum para se utilizar uma subconsulta (subquery)?", choices: ["SELECT","FROM","WHERE","ORDER BY"], answerIndex: 3, explanation: "ORDER BY não é um local padrão de uso como as outras três." },
-    { type: "mcq", id: "m2", text: "Qual comando é usado para criar uma tabela virtual baseada no resultado de uma consulta SELECT armazenada?", choices: ["CREATE TABLE VIRTUAL","CREATE VIEW","CREATE SUBQUERY","SELECT INTO VIEW"], answerIndex: 1, explanation: "CREATE VIEW." },
-
-    // Marque a incorreta (2)
-    { type: "wrong", id: "w1", text: "Sobre Subqueries (consultas aninhadas), marque a afirmativa INCORRETA:", choices: ["Podem ser usadas na cláusula HAVING.","São úteis com o operador IN para comparar com múltiplos valores retornados pela subquery.","Em termos de performance, subqueries são sempre preferíveis aos JOINs.","Podem ser usadas para calcular um valor (como uma média) que será usado na consulta principal."], answerIndex: 2, explanation: "Em termos de performance, subqueries não são sempre preferíveis aos JOINs; depende do caso." },
-    { type: "wrong", id: "w2", text: "Sobre JOINs, marque a afirmativa INCORRETA:", choices: ["LEFT JOIN retorna todos os registros da tabela da esquerda.","INNER JOIN retorna apenas os registros que têm correspondência em ambas as tabelas.","O otimizador de consultas do SGBD pode reorganizar a execução dos JOINs para melhor performance.","A ordem em que os JOINs são escritos no código não afeta em nada a legibilidade da consulta."], answerIndex: 3, explanation: "A ordem escrita afeta legibilidade mesmo que o otimizador mude a execução." }
-  ]
-};
-
-/* ---------- Helpers ---------- */
-function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
-
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] }
-  return arr;
-}
-
-/* ---------- Quiz generation logic ---------- */
-let currentQuiz = null;
-
-function pickQuestions(count){
-  // Start from miniSimulado base and expand with template variations from content
-  const base = [...CONTENT.miniSimulado];
-  const pool = [];
-
-  // Use base as seeds, but also create small variations programmatically:
-  base.forEach(q=>{
-    pool.push(JSON.parse(JSON.stringify(q))); // deep copy
-    // Create small variations for TF and MCQ by rephrasing slightly
-    if(q.type==='tf'){
-      const v = JSON.parse(JSON.stringify(q));
-      v.id = q.id + '_v2';
-      v.text = q.text.replace(/LEFT JOIN/,'LEFT JOIN (versão)');
-      pool.push(v);
-    }
-    if(q.type==='mcq' || q.type==='wrong'){
-      const v = JSON.parse(JSON.stringify(q));
-      v.id = q.id + '_v2';
-      pool.push(v);
-    }
-  });
-
-  // Also synthesize some new questions from topics for variety:
-  const synth = [];
-  synth.push({type:'mcq', id:uid('s'), text:'Qual cláusula é processada antes do GROUP BY?', choices:['HAVING','WHERE','ORDER BY','GROUP BY'], answerIndex:1, explanation:'WHERE é processada antes do GROUP BY.'});
-  synth.push({type:'mcq', id:uid('s'), text:'Qual JOIN retorna todos os registros da tabela da esquerda?', choices:['INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL JOIN'], answerIndex:1, explanation:'LEFT JOIN retorna todos da esquerda.'});
-  synth.push({type:'tf', id:uid('s'), text:'Uma View é normalmente uma cópia física dos dados.', answer:false, explanation:'Uma View é virtual, não uma cópia física.'});
-  synth.push({type:'relation', id:uid('s'), text:'I. WHERE filtra antes do GROUP BY. II. HAVING filtra após agregação.', correctOption:'D', explanation:'Ambas verdadeiras e II justifica I.'});
-  synth.forEach(s=>pool.push(s));
-
-  // shuffle pool
-  shuffle(pool);
-
-  // ensure at least 3 essays
-  const essayPool = pool.filter(q=>q.type==='essay');
-  if(essayPool.length < 3){
-    // duplicate existing essay(s) with slight variations
-    const baseEssays = CONTENT.miniSimulado.filter(x=>x.type==='essay');
-    let idx = 0;
-    while(essayPool.length + (idx) < 3 && idx < baseEssays.length){
-      const ex = JSON.parse(JSON.stringify(baseEssays[idx % baseEssays.length]));
-      ex.id = ex.id + '_extra_' + idx;
-      ex.text = ex.text + ' (variação)';
-      pool.push(ex);
-      idx++;
-    }
-  }
-
-  // Now pick exactly `count`, but ensure at least 3 essays
-  let selected = [];
-  // pick essays first up to 3
-  const essays = pool.filter(q=>q.type==='essay');
-  for(let i=0; i<Math.min(3, essays.length) && selected.length < count; i++){
-    selected.push(essays[i]);
-  }
-
-  // fill with non-essay
-  const nonEssays = pool.filter(q=>q.type!=='essay');
-  let ni = 0;
-  while(selected.length < count && ni < nonEssays.length){
-    selected.push(nonEssays[ni]); ni++;
-  }
-
-  // if still not enough (rare), add remaining pool items
-  if(selected.length < count){
-    const remaining = pool.filter(q=>!selected.includes(q));
-    let ri = 0;
-    while(selected.length < count && ri < remaining.length){
-      selected.push(remaining[ri]); ri++;
-    }
-  }
-
-  shuffle(selected);
-  return selected.slice(0, count);
-}
-
-/* ---------- UI rendering ---------- */
-const quizWrap = document.getElementById('quizWrap');
-const quizArea = document.getElementById('quizArea');
-const meta = document.getElementById('meta');
-const timerEl = document.getElementById('timer');
-const resultArea = document.getElementById('resultArea');
-
-document.getElementById('btnGenerate').addEventListener('click', ()=>{
-  const k = document.getElementById('apiKey').value.trim();
-  const count = parseInt(document.getElementById('qCount').value,10);
-  generateQuiz(count, k);
-});
-
-document.getElementById('btnRegenerate').addEventListener('click', ()=>{
-  if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.apiKey, true);
-});
-
-document.getElementById('btnNew').addEventListener('click', ()=> {
-  if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.apiKey, true);
-});
-
-document.getElementById('btnClear').addEventListener('click', ()=>{
-  document.querySelectorAll('#quizArea input[type=radio]').forEach(i=>i.checked=false);
-  document.querySelectorAll('#quizArea textarea, #quizArea input[type=text]').forEach(i=>i.value='');
-});
-
-document.getElementById('btnSubmit').addEventListener('click', async ()=>{
-  if(!currentQuiz) return;
-  // collect answers
-  const answers = [];
-  for(const q of currentQuiz.questions){
-    const el = document.getElementById(q._domId);
-    if(!el) continue;
-    let resp = null;
-    if(q.type==='mcq' || q.type==='wrong'){
-      const radios = el.querySelectorAll('input[type=radio]');
-      for(const r of radios) if(r.checked) resp = parseInt(r.value,10);
-    } else if(q.type==='tf'){
-      const v = el.querySelector('select');
-      resp = v ? (v.value==='true' ? true : (v.value==='false' ? false : null)) : null;
-    } else if(q.type==='relation'){
-      const s = el.querySelector('select');
-      resp = s ? s.value : null;
-    } else if(q.type==='essay'){
-      const ta = el.querySelector('textarea');
-      resp = ta ? ta.value.trim() : '';
-    }
-    answers.push({id:q.id, type:q.type, question:q, answer:resp});
-  }
-
-  // Disable button while grading
-  document.getElementById('btnSubmit').disabled = true;
-  resultArea.classList.remove('hidden');
-  resultArea.innerHTML = '<div class="summary">Corrigindo... Aguarde (pode levar alguns segundos se a IA for chamada)</div>';
-  // Grade
-  const grading = await gradeAnswers(answers, currentQuiz.apiKey);
-  // Show results
-  renderResults(grading);
-  document.getElementById('btnSubmit').disabled = false;
-});
-
-function renderResults(grading){
-  const total = grading.length;
-  let correct = 0;
-  let html = '<h3>Resultado</h3>';
-  html += '<div class="summary"><strong>Resumo:</strong> ' + grading.length + ' questões</div>';
-  html += '<div style="margin-top:10px">';
-  grading.forEach((g, idx)=>{
-    const q = g.question;
-    html += `<div class="q"><h3>${idx+1}. ${escapeHtml(q.text)}</h3>`;
-    if(q.type==='essay'){
-      if(g.autoGraded){
-        const scoreText = (typeof g.score !== 'undefined' && g.score !== null) ? g.score : '—';
-        html += `<div class="tiny">Nota (auto): <strong>${scoreText}</strong> / 10 <span class="badge">${g.label ?? ''}</span></div>`;
-        html += `<div class="explain">${escapeHtml(g.feedback || 'Sem feedback.')}</div>`;
-        if(typeof g.score === 'number' && g.score >= 6) correct++;
-      } else {
-        html += `<div class="tiny">Avaliação automática indisponível — veja a resposta esperada e critérios abaixo.</div>`;
-        html += `<div class="explain"><strong>Resposta esperada:</strong> ${escapeHtml(q.answer)}</div>`;
-        html += `<div class="explain"><strong>Critérios:</strong> WHERE vs HAVING e ordem de execução; menção a funções agregadas. (Marcar 0-10).</div>`;
-      }
-    } else {
-      if(g.correct){
-        html += `<div class="result-correct">✔ Correto</div>`;
-        correct++;
-      } else {
-        html += `<div class="result-wrong">✖ Errado</div>`;
-        html += `<div class="explain"><strong>Explicação:</strong> ${escapeHtml(g.explanation || '—')}</div>`;
-      }
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  html += `<div class="summary" style="margin-top:12px"><strong>Acertos:</strong> ${correct} / ${total}</div>`;
-  resultArea.innerHTML = html;
-}
-
-/* ---------- Grading logic ---------- */
-async function gradeAnswers(answers, apiKey){
-  // For objective questions, use local gabarito
-  const grading = [];
-  for(const a of answers){
-    const q = a.question;
-    const record = {question: q, userAnswer: a.answer, type: a.type, correct:false, explanation:null, autoGraded:false};
-    if(a.type==='mcq' || a.type==='wrong'){
-      const isCorrect = (a.answer !== null && a.answer === q.answerIndex);
-      record.correct = isCorrect;
-      record.explanation = q.explanation || '';
-      record.autoGraded = true;
-    } else if(a.type==='tf'){
-      const isCorrect = (typeof a.answer === 'boolean' && a.answer === q.answer);
-      record.correct = isCorrect;
-      record.explanation = q.explanation || '';
-      record.autoGraded = true;
-    } else if(a.type==='relation'){
-      const isCorrect = (a.answer === q.correctOption);
-      record.correct = isCorrect;
-      record.explanation = q.explanation || '';
-      record.autoGraded = true;
-    } else if(a.type==='essay'){
-      // Request the AI to grade the essay (scale 0-10) and give feedback (if apiKey provided)
-      if(apiKey){
-        try{
-          const prompt = buildEssayGradingPrompt(q.text, q.answer, a.answer);
-          const aiResp = await callGenerativeAPI(apiKey, prompt);
-          const parsed = tryParseScoreFeedback(aiResp);
-          if(parsed){
-            record.autoGraded = true;
-            record.score = parsed.score;
-            record.feedback = parsed.feedback;
-            record.label = parsed.score >= 6 ? 'Bom' : 'Precisa melhorar';
-          } else {
-            // fallback: place AI raw text as feedback
-            record.autoGraded = true;
-            record.feedback = aiResp;
-            record.score = null;
-            record.label = '';
-          }
-        }catch(err){
-          console.warn('AI grading failed',err);
-          record.autoGraded = false;
+    /* ---------- Conteúdo (POO) ---------- */
+    const POO_CONTENT = {
+      miniSimulado: [
+        { 
+          type: "essay", 
+          id: "p_essay1", 
+          text: "Uma classe RelatorioService possui um método que, baseado em um parâmetro, usa uma série de if/else para decidir se o relatório deve ser gerado em PDF, Excel ou CSV. Explique qual princípio SOLID isso viola e por quê.", 
+          answer: "Viola o Princípio Aberto/Fechado (OCP). Porque para adicionar um novo formato de relatório (ex: HTML), o desenvolvedor é obrigado a modificar a classe RelatorioService adicionando um novo else if." 
+        },
+        { 
+          type: "essay", 
+          id: "p_essay2", 
+          text: "Descreva brevemente o que é a arquitetura de Microsserviços e por que ela seria uma boa escolha para um sistema financeiro que precisa escalar apenas o módulo de processamento de transações.", 
+          answer: "É uma arquitetura que divide o sistema em serviços menores e independentes. Ela é uma boa escolha nesse cenário pois permite escalabilidade granular: em vez de escalar o sistema inteiro (como no monolito), a empresa pode escalar apenas o microsserviço de processamento de transações, que é o que recebe a alta demanda." 
+        },
+        { 
+          type: "tf", 
+          id: "p_vf1", 
+          text: "O Princípio da Inversão de Dependência (DIP) afirma que módulos de alto nível, como FaturaService, devem depender diretamente de módulos de baixo nível, como EmailSender.",
+          answer: false, 
+          explanation: "Falso (O DIP afirma o exato oposto: módulos de alto nível devem depender de abstrações/interfaces, e não de classes concretas de baixo nível)." 
+        },
+        { 
+          type: "tf", 
+          id: "p_vf2", 
+          text: "Na arquitetura Serverless, os servidores não existem mais, e o código é executado sem nenhuma infraestrutura física.", 
+          answer: false, 
+          explanation: "Falso (Os servidores ainda existem, mas eles são gerenciados pelo provedor de nuvem, não por você)." 
+        },
+        { 
+          type: "relation", 
+          id: "p_rel1", 
+          text: "I. Uma classe PedidoService que calcula o total do pedido e também registra logs detalhados em um arquivo de texto viola o Princípio da Responsabilidade Única (SRP). PORQUE II. Essa classe possui mais de um motivo para ser alterada: uma mudança na regra de cálculo de total ou uma mudança no formato do log.", 
+          correctOption: "D", 
+          explanation: "As duas são verdadeiras, e a II justifica a I (A classe viola o SRP exatamente porque tem dois motivos para mudar: as regras de negócio e as regras de log )." 
+        },
+        { 
+          type: "relation", 
+          id: "p_rel2", 
+          text: "I. Uma interface Notificador que obriga todas as classes a implementar enviarEmail(), enviarSMS() e enviarPush(), mesmo que elas não usem todos, viola o Princípio da Segregação de Interfaces (ISP). PORQUE II. O Princípio da Responsabilidade Única (SRP) afirma que interfaces não devem ser 'gordas'.", 
+          correctOption: "B", 
+          explanation: "A asserção I é verdadeira, e a II é falsa (A I está correta, é uma violação do ISP. A II está errada; a descrição 'interfaces não devem ser gordas' é do ISP, não do SRP )." 
+        },
+        { 
+          type: "mcq", 
+          id: "p_mcq1", 
+          text: "Em um sistema de pagamentos, a classe base Pagamento tem o método processar(). A subclasse PagamentoBoleto implementa processar() lançando uma exceção 'Operação não suportada'. Qual princípio SOLID foi violado?", 
+          choices: ["Princípio Aberto/Fechado (OCP)", "Princípio da Substituição de Liskov (LSP)", "Princípio da Inversão de Dependência (DIP)", "Princípio da Segregação de Interfaces (ISP)"], 
+          answerIndex: 1, 
+          explanation: "A resposta correta é B: Princípio da Substituição de Liskov (LSP). A subclasse não se comporta como a classe mãe, quebrando o contrato e tornando-a não substituível." 
+        },
+        { 
+          type: "mcq", 
+          id: "p_mcq2", 
+          text: "No padrão MVC, qual camada é responsável por conter os dados e as regras de negócio do sistema?", 
+          choices: ["View", "Controller", "Model", "Service"], 
+          answerIndex: 2, 
+          explanation: "A resposta correta é C: O Model contém os dados e as regras de negócio." 
+        },
+        { 
+          type: "wrong", 
+          id: "p_w1", 
+          text: "Sobre Arquitetura de Microsserviços, marque a afirmativa INCORRETA:", 
+          choices: ["Ajuda a escalar partes específicas de um sistema financeiro, como o processamento de transações.", "É um sistema dividido em serviços menores e independentes.", "Um desafio comum é a complexidade na comunicação entre os serviços.", "É considerada uma arquitetura mais simples de implantar e gerenciar do que um Monolito."], 
+          answerIndex: 3, 
+          explanation: "A afirmativa D é incorreta. Microsserviços são mais complexos de implantar e gerenciar do que um Monolito, embora o Monolito seja mais simples *inicialmente*." 
+        },
+        { 
+          type: "wrong", 
+          id: "p_w2", 
+          text: "Sobre o Princípio da Inversão de Dependência (DIP), marque a afirmativa INCORRETA:", 
+          choices: ["Módulos de alto nível devem depender de abstrações (interfaces).", "Módulos de baixo nível (classes concretas) devem implementar as abstrações.", "NotificationManager instanciando new SmsService() é uma violação do DIP.", "O principal benefício do DIP é garantir que a classe filha possa substituir a classe mãe sem quebrar o sistema."], 
+          answerIndex: 3, 
+          explanation: "A afirmativa D é incorreta. O benefício descrito (filha substituir a mãe) é do Princípio da Substituição de Liskov (LSP), não do DIP." 
+        },
+        { 
+          type: "multiRelation", 
+          id: "p_mult1", 
+          text: "Considere as afirmações sobre interfaces (ISP):\nI. Uma interface Notificador com enviarEmail(), enviarSMS() e enviarPush() força implementações a métodos que podem não usar.\nII. Isso viola o ISP.\nIII. Segregar em interfaces menores (INotificadorEmail, INotificadorSMS) é recomendado.\nIV. SRP é aplicável a interfaces e diz que interfaces não devem ter mais de um método.\nV. Uma interface 'gorda' melhora a reutilização em todos os casos.", 
+          answers: ["I","II","III"], 
+          explanation: "I, II e III são verdadeiras; IV (ISP fala sobre interfaces 'gordas', não SRP) e V são falsas." 
         }
-      } else {
-        record.autoGraded = false;
+      ]
+    };
+
+    /* ---------- Conteúdo (WEB) ---------- */
+    const WEB_CONTENT = {
+      miniSimulado: [
+        { 
+          type: "essay", 
+          id: "w_essay1", 
+          text: "Explique o que é uma API e como ela facilita a integração entre dois sistemas, como um aplicativo de celular e um servidor web.", 
+          answer: "Uma API é um conjunto de regras que permite a comunicação entre sistemas. Ela facilita a integração permitindo que o aplicativo de celular (cliente) envie requisições (ex: GET /produtos) para o servidor. O servidor processa o pedido, busca no banco de dados e retorna os dados em JSON, que o aplicativo entende e exibe ao usuário." 
+        },
+        { 
+          type: "essay", 
+          id: "w_essay2", 
+          text: "Descreva como ocorre a comunicação entre o frontend e o backend no processo de um usuário realizando um login.", 
+          answer: "O usuário preenche o formulário (frontend), o JavaScript envia uma requisição POST para /login contendo o JSON com email e senha. O backend (servidor) recebe, busca o usuário, compara a senha enviada com a senha criptografada no banco. Se bater, ele retorna uma resposta de sucesso (ex: um token); se não, retorna um erro de autenticação." 
+        },
+        { 
+          type: "tf", 
+          id: "w_vf1", 
+          text: "O Node.js é um ambiente de execução que permite ao JavaScript do frontend (navegador) acessar diretamente o banco de dados do servidor para maior performance.", 
+          answer: false, 
+          explanation: "Node.js permite ao servidor acessar o banco de dados, não ao frontend." 
+        },
+        { 
+          type: "tf", 
+          id: "w_vf2", 
+          text: "Para converter uma string de texto no formato JSON para um objeto JavaScript utilizável, deve-se usar o método JSON.stringify().", 
+          answer: false, 
+          explanation: "Para converter JSON (string) para Objeto JS, usa-se JSON.parse(). JSON.stringify() faz o oposto." 
+        },
+        { 
+          type: "relation", 
+          id: "w_rel1", 
+          text: "I. O verbo HTTP POST é usado para criar um novo recurso, enquanto o verbo PUT é usado para atualizar/substituir um recurso existente. PORQUE II. A principal diferença entre eles é que o PUT é idempotente (várias chamadas têm o mesmo resultado), enquanto o POST não é (várias chamadas criam vários recursos).", 
+          correctOption: "D", 
+          explanation: "As duas são verdadeiras, e a II justifica a I (A I define os verbos. A II explica a razão da diferença técnica (idempotência), o que justifica a separação de uso entre criar e atualizar )." 
+        },
+        { 
+          type: "relation", 
+          id: "w_rel2", 
+          text: "I. O JSON é considerado o formato de dados mais compatível com o JavaScript. PORQUE II. A estrutura de um objeto JSON é idêntica à de um objeto JavaScript, não necessitando de nenhuma conversão para ser utilizado no código.", 
+          correctOption: "B", 
+          explanation: "A asserção I é verdadeira, e a II é falsa (A I é verdadeira, a sintaxe é muito compatível. A II é falsa; JSON é uma string e precisa de conversão (JSON.parse()) para virar um objeto JS. Além disso, chaves JSON precisam de aspas duplas, diferente de objetos JS)." 
+        },
+        { 
+          type: "mcq", 
+          id: "w_mcq1", 
+          text: "Qual é a principal função do backend em uma aplicação web?", 
+          choices: ["Tornar a página interativa com animações e validação de formulários.", "Armazenar os dados de login e senha no localStorage do navegador.", "Executar a lógica de negócio, acessar o banco de dados e gerenciar a autenticação.", "Renderizar o HTML e o CSS que o usuário vê na tela."], 
+          answerIndex: 2, 
+          explanation: "A resposta correta é C: O backend executa a lógica de negócio, acessa o banco de dados e gerencia a autenticação." 
+        },
+        { 
+          type: "mcq", 
+          id: "w_mcq2", 
+          text: "Qual é a forma correta de lidar com um erro que pode ocorrer em uma função async no Node.js?", 
+          choices: ["Usando if (error) após a chamada da função.", "Usando o método .catch() no final da chamada await.", "Envolvendo a chamada await (que pode falhar) dentro de um bloco try...catch.", "O await já trata os erros automaticamente, não sendo necessário nenhum bloco extra."], 
+          answerIndex: 2, 
+          explanation: "A resposta correta é C: A forma padrão de tratar erros com async/await é usando try...catch." 
+        },
+        { 
+          type: "wrong", 
+          id: "w_w1", 
+          text: "Sobre os verbos HTTP e APIs RESTful, marque a afirmativa INCORRETA:", 
+          choices: ["GET é usado para buscar dados de um recurso.", "DELETE é usado para remover um recurso.", "POST é usado para atualizar completamente um recurso que já existe.", "Uma boa prática de API RESTful é usar substantivos nos endpoints, como /usuarios."], 
+          answerIndex: 2, 
+          explanation: "A afirmativa C é incorreta. POST é usado para criar um novo recurso; PUT (ou PATCH) é usado para atualizar." 
+        },
+        { 
+          type: "wrong", 
+          id: "w_w2", 
+          text: "Sobre o processo de autenticação no backend, marque a afirmativa INCORRETA:", 
+          choices: ["O backend recebe os dados de login (email e senha) do frontend.", "O backend deve usar criptografia ao armazenar e verificar senhas.", "Uma boa prática é armazenar a senha do usuário em texto puro no banco de dados para facilitar a verificação.", "O servidor retorna uma resposta de sucesso (geralmente com um token) ou uma resposta de erro."], 
+          answerIndex: 2, 
+          explanation: "A afirmativa C é incorreta. Armazenar senhas em texto puro é uma falha grave de segurança." 
+        },
+        { 
+          type: "multiRelation", 
+          id: "w_mult1", 
+          text: "Considere as afirmações sobre JSON e JS:\nI. JSON é uma string textual.\nII. JSON.parse() converte string JSON em objeto JS.\nIII. JSON.stringify() converte objeto JS para string JSON.\nIV. Em JSON, as chaves não precisam estar entre aspas.\nV. JSON e objeto JS são o mesmo sem conversão.", 
+          answers: ["I","II","III"], 
+          explanation: "I, II e III verdadeiras; IV (chaves JSON *precisam* de aspas) e V são falsas." 
+        }
+      ]
+    };
+
+    /* ---------- Helpers ---------- */
+    function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    function arraysEqualIgnoreOrder(a,b){ if(!Array.isArray(a) || !Array.isArray(b)) return false; if(a.length !== b.length) return false; const aa = a.slice().map(x=>String(x).trim().toUpperCase()).sort(); const bb = b.slice().map(x=>String(x).trim().toUpperCase()).sort(); for(let i=0;i<aa.length;i++) if(aa[i] !== bb[i]) return false; return true; }
+
+    /* ---------- DOM refs ---------- */
+    const apiKeyInput = document.getElementById('apiKey');
+    const subjectSelect = document.getElementById('subject');
+    const qCountSelect = document.getElementById('qCount');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const btnRegenerate = document.getElementById('btnRegenerate');
+    const btnClear = document.getElementById('btnClear');
+    const btnNew = document.getElementById('btnNew');
+    const quizSection = document.getElementById('quizSection');
+    const quizArea = document.getElementById('quizArea');
+    const metaEl = document.getElementById('meta');
+    const timerEl = document.getElementById('timer');
+    const resultArea = document.getElementById('resultArea');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    let currentQuiz = null;
+    let timerInterval = null;
+
+    /* ---------- Events ---------- */
+    btnGenerate.addEventListener('click', ()=> {
+      const key = apiKeyInput.value.trim();
+      const subj = subjectSelect.value;
+      const count = parseInt(qCountSelect.value,10);
+      generateQuiz(count, subj, key);
+    });
+    btnRegenerate.addEventListener('click', ()=> { if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.subject, currentQuiz.apiKey, true); });
+    btnNew.addEventListener('click', ()=> { if(currentQuiz) generateQuiz(currentQuiz.questions.length, currentQuiz.subject, currentQuiz.apiKey, true); });
+    btnClear.addEventListener('click', ()=> {
+      document.querySelectorAll('#quizArea input[type=radio]').forEach(i=>i.checked=false);
+      document.querySelectorAll('#quizArea textarea, #quizArea input[type=text]').forEach(i=>i.value='');
+      document.querySelectorAll('#quizArea select').forEach(s=>s.selectedIndex=0);
+      document.querySelectorAll('#quizArea input[type=checkbox]').forEach(c=>c.checked=false);
+    });
+    btnSubmit.addEventListener('click', async ()=> {
+      if(!currentQuiz) return;
+      btnSubmit.disabled = true;
+      resultArea.classList.remove('hidden');
+      resultArea.innerHTML = `<div class="summary">Corrigindo... (pode levar alguns segundos se a IA for chamada)</div>`;
+      try{
+        const results = await gradeAnswers(currentQuiz.apiKey || apiKeyInput.value.trim());
+        renderResults(results);
+      }catch(err){
+        resultArea.innerHTML = `<div class="summary">Erro ao corrigir: ${escapeHtml(String(err.message || err))}</div>`;
+        console.error(err);
+      } finally {
+        btnSubmit.disabled = false;
       }
+    });
+
+    
+    /* ---------- Question selection (CORRIGIDA E OTIMIZADA) ----------
+      Esta função agora garante que o número exato de 'count' seja retornado.
+      Se 'count' for 15 e a piscina só tiver 12, ela adicionará 3 duplicatas
+      aleatórias da piscina base para preencher o total.
+    */
+    function pickQuestions(count, subject){
+      // 1. Obter a piscina base (11 questões)
+      const poolBase = (subject === 'POO') ? POO_CONTENT.miniSimulado.slice() : WEB_CONTENT.miniSimulado.slice();
+      
+      // 2. Criar uma piscina de trabalho (deep copy)
+      const pool = poolBase.map(q => JSON.parse(JSON.stringify(q)));
+      
+      // 3. Aumentar a piscina de trabalho se tiver poucas dissertativas (eleva para 12)
+      let essays = pool.filter(q=>q.type==='essay');
+      if(essays.length < 3){
+        const base = pool.filter(q=>q.type==='essay');
+        let i=0;
+        while(essays.length < 3 && i < 5){
+          if(base.length === 0) break;
+          const ex = JSON.parse(JSON.stringify(base[i % base.length]));
+          ex.id = ex.id + '_dup' + i;
+          ex.text = ex.text + ' (variação)';
+          pool.push(ex);
+          essays = pool.filter(q=>q.type==='essay');
+          i++;
+        }
+      }
+      
+      // 4. Embaralhar a piscina de trabalho (agora com 12 questões)
+      shuffle(pool);
+      
+      // 5. Iniciar a seleção
+      const selected = [];
+      
+      // 6. Tentar preencher com questões "únicas" primeiro
+      const essayList = pool.filter(q=>q.type==='essay');
+      for(let i=0;i<Math.min(3, essayList.length) && selected.length < count;i++) {
+          selected.push(essayList[i]);
+      }
+      
+      const rest = pool.filter(q=>!selected.includes(q));
+      let ri = 0;
+      while(selected.length < count && ri < rest.length){ 
+          selected.push(rest[ri]); 
+          ri++; 
+      }
+      
+      // 7. *** OTIMIZAÇÃO E CORREÇÃO AQUI ***
+      // Se 'count' (ex: 15) for MAIOR que o que selecionamos (ex: 12),
+      // preenchemos o resto com duplicatas aleatórias da piscina BASE.
+      if(selected.length < count){
+        console.warn(`Piscina (${selected.length}) menor que o solicitado (${count}). Adicionando duplicatas.`);
+        const needed = count - selected.length; // ex: 15 - 12 = 3
+        
+        for(let j=0; j < needed; j++) {
+            // Pega uma questão aleatória da piscina base (11 questões)
+            const randQ = poolBase[Math.floor(Math.random() * poolBase.length)];
+            // Cria uma nova cópia
+            const newDup = JSON.parse(JSON.stringify(randQ));
+            // Dá um ID único
+            newDup.id = newDup.id + '_dup_fill_' + j;
+            selected.push(newDup);
+        }
+      }
+      
+      // 8. Embaralhar a lista final e retornar o número exato
+      shuffle(selected);
+      return selected.slice(0,count);
     }
-    grading.push(record);
-  }
-  return grading;
-}
 
-/* ---------- AI calling utilities ---------- */
-async function callGenerativeAPI(apiKey, prompt){
-  // Try to call Generative Language API (text-bison style) via REST.
-  // We'll attempt to use the "generativelanguage" endpoint as commonly documented.
-  // Note: CORS or API changes might break this; we catch errors and return fallback text.
-  const endpoint = 'https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=' + encodeURIComponent(apiKey);
-  const body = {
-    prompt: { text: prompt },
-    temperature: 0.2,
-    candidateCount: 1,
-    maxOutputTokens: 512
-  };
+    /* ---------- Render quiz ---------- */
+    function generateQuiz(count=15, subject='POO', apiKey='', regenerate=false){
+      const questions = pickQuestions(count, subject);
+      currentQuiz = { questions, subject, apiKey, created: new Date() };
+      quizArea.innerHTML = '';
+      quizSection.classList.remove('hidden');
+      metaEl.textContent = `${questions.length} questões • ${subject} • gerado em ${currentQuiz.created.toLocaleTimeString()}`;
+      resultArea.classList.add('hidden'); resultArea.innerHTML = '';
+      btnRegenerate.disabled = false;
 
-  // Try fetch
-  const resp = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  });
+      questions.forEach((q, idx) => {
+        const domId = uid('q_'); q._domId = domId;
+        const card = document.createElement('div'); card.className = 'q'; card.id = domId;
+        const title = document.createElement('h3'); 
+        
+        if (q.type !== 'multiRelation') {
+            title.innerHTML = `${idx+1}. ${q.text}`;
+        }
+        card.appendChild(title);
 
-  if(!resp.ok) {
-    const txt = await resp.text();
-    throw new Error('API error: ' + resp.status + ' - ' + txt);
-  }
-  const j = await resp.json();
-  // The exact field varies; generative language may return j.candidates[0].output or j.output[0].content[0].text depending on version.
-  // Try to extract robustly:
-  let textOut = '';
-  if(j.candidates && j.candidates[0] && j.candidates[0].output){
-    // older format
-    textOut = j.candidates[0].output;
-  } else if(j.candidates && j.candidates[0] && j.candidates[0].content){
-    textOut = j.candidates[0].content.map(c=>c.text || '').join('\n');
-  } else if(j.output && j.output[0] && j.output[0].content){
-    textOut = j.output[0].content.map(c=>c.text || '').join('\n');
-  } else if(j.result && typeof j.result === 'string') {
-    textOut = j.result;
-  } else {
-    textOut = JSON.stringify(j);
-  }
-  return textOut;
-}
+        const opts = document.createElement('div'); opts.className = 'options';
 
-function tryParseScoreFeedback(aiText){
-  // The prompt we send asks for a JSON with score and feedback. Try to extract numbers.
-  // Look for a JSON block
-  try{
-    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-    if(jsonMatch){
-      const obj = JSON.parse(jsonMatch[0]);
-      if(typeof obj.score !== 'undefined') return {score: Number(obj.score), feedback: String(obj.feedback || '')};
-    }
-  }catch(e){}
-  // fallback try to find "score: X" patterns
-  const scoreMatch = aiText.match(/score[:\s]*([0-9]+(?:\.[0-9]+)?)/i);
-  if(scoreMatch){
-    const s = Number(scoreMatch[1]);
-    const fb = aiText.replace(scoreMatch[0],'').trim();
-    return {score: s, feedback: fb};
-  }
-  return null;
-}
+        if(q.type === 'mcq' || q.type === 'wrong'){
+          q.choices = q.choices || [];
+          if(typeof q.answerIndex === 'undefined') q.answerIndex = 0;
+          const indexed = q.choices.map((c,i)=>({text:c, orig:i}));
+          shuffle(indexed);
+          q._shuffled = indexed.map(it=>it.orig); 
+          indexed.forEach((it,j)=>{
+            const label = document.createElement('label'); label.className='option';
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`;
+            opts.appendChild(label);
+          });
+        } else if(q.type === 'tf'){
+          const sel = document.createElement('select'); sel.className='option';
+          sel.innerHTML = `<option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option>`;
+          opts.appendChild(sel);
+          
+        } else if(q.type === 'relation'){
+          const relationOptions = [
+            { value: "A", text: "A asserção I é falsa, e a II é verdadeira." },
+            { value: "B", text: "A asserção I é verdadeira, e a II é falsa." },
+            { value: "C", text: "As duas são verdadeiras, mas a II não justifica a I." },
+            { value: "D", text: "As duas são verdadeiras, e a II justifica a I." }
+          ];
+          relationOptions.forEach(opt => {
+            const label = document.createElement('label'); 
+            label.className = 'option';
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`;
+            opts.appendChild(label);
+          });
+          
+        } else if(q.type === 'multiRelation'){
+          const wrap = document.createElement('div'); wrap.className='multi-relation';
+          const lines = q.text.split('\n').map(s=>s.trim()).filter(Boolean);
+          let statements = [];
+          let prompt = q.text; 
 
-function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){
-  // Ask the model to grade in JSON format.
-  return `Você é um avaliador especialista em SQL. Leia a questão e a resposta do aluno. Retorne apenas um JSON válido com formato: {"score": NotaEntre0e10, "feedback": "texto com comentários específicos, pontos fortes e pontos a melhorar (curto)"}.
+          if (q.statements && Array.isArray(q.statements)) {
+            statements = q.statements.slice();
+            prompt = lines[0] || q.text; 
+          } else if (lines.length > 1) {
+            prompt = lines[0]; 
+            statements = lines.slice(1);
+          } else {
+            statements = q.statements ? q.statements.slice() : ['I. (afirmação 1)','II. (afirmação 2)','III. (afirmação 3)','IV. (afirmação 4)','V. (afirmação 5)'];
+          }
+          
+          title.innerHTML = `${idx+1}. ${prompt}`;
+          
+          const romans = ['I','II','III','IV','V'];
+          for(let i=0;i<statements.length;i++){
+            const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
+            const label = document.createElement('label');
+            const idcb = uid('cb_');
+            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> ${escapeHtml(stmt)}`;
+            wrap.appendChild(label);
+          }
+          if(!Array.isArray(q.answers)) q.answers = q.answers || [];
+          opts.appendChild(wrap);
+          
+        } else if(q.type === 'essay'){
+          const ta = document.createElement('textarea'); ta.className='answer'; ta.placeholder = 'Escreva sua resposta aqui...';
+          opts.appendChild(ta);
+        } else { opts.appendChild(document.createTextNode('Tipo não suportado.')); }
 
-Questão:
-${questionText}
-
-Resposta esperada (exemplo / gabarito):
-${expectedAnswer}
-
-Resposta do aluno:
-${studentAnswer}
-
-Avalie a resposta do aluno comparando com o esperado. Seja objetivo: devolva somente o JSON. Nota de 0 a 10 (número). Feedback breve.`;
-}
-
-/* ---------- Quiz rendering ---------- */
-function generateQuiz(count = 15, apiKey = '', regenerate=false){
-  const questions = pickQuestions(count);
-  currentQuiz = {questions, apiKey, created: new Date()};
-  quizArea.innerHTML = '';
-  document.getElementById('btnRegenerate').disabled = false;
-  document.getElementById('btnGenerate').disabled = false;
-  quizWrap.classList.remove('hidden');
-  meta.textContent = `${questions.length} questões • gerado em ${currentQuiz.created.toLocaleTimeString()}`;
-  resultArea.classList.add('hidden'); resultArea.innerHTML='';
-
-  questions.forEach((q, idx)=>{
-    const domId = uid('qdom_'); q._domId = domId;
-    const container = document.createElement('div'); container.className = 'q';
-    container.id = domId;
-
-    const title = document.createElement('h3'); title.innerHTML = `${idx+1}. ${q.text}`;
-    container.appendChild(title);
-
-    const opts = document.createElement('div'); opts.className = 'options';
-
-    if(q.type==='mcq' || q.type==='wrong'){
-      const choices = q.choices ? q.choices : (q.choices || []);
-      // leave order stable to keep gabarito simple
-      choices.forEach((c,i)=>{
-        const id = uid('opt_');
-        const label = document.createElement('label');
-        label.className = 'option';
-        label.innerHTML = `<input type="radio" name="${domId}_mcq" value="${i}"> ${escapeHtml(c)}`;
-        opts.appendChild(label);
+        card.appendChild(opts);
+        quizArea.appendChild(card);
       });
-    } else if(q.type==='tf'){
-      opts.innerHTML = `<label class="option"><select><option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option></select></label>`;
-    } else if(q.type==='relation'){
-      opts.innerHTML = `<label class="option small">Marque a alternativa correta: <select><option value="">-- escolha --</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></label>`;
-    } else if(q.type==='essay'){
-      opts.innerHTML = `<label class="option"><textarea class="answer" placeholder="Escreva sua resposta aqui..."></textarea></label>`;
-    } else { opts.innerHTML = `<div class="tiny">Tipo de questão não suportado.</div>`; }
 
-    container.appendChild(opts);
-    quizArea.appendChild(container);
-  });
+      startTimer(20*60);
+    }
 
-  // start a basic timer (optional)
-  startTimer(20*60); // 20 minutes visual timer
-}
+    /* ---------- Grade answers ---------- */
+    async function gradeAnswers(apiKey){
+      if(!currentQuiz) return [];
+      const results = [];
+      for(const q of currentQuiz.questions){
+        const el = document.getElementById(q._domId);
+        const res = { question: q, type: q.type, userAnswer: null, correct:false, explanation:'', autoGraded:false };
+        
+        if(q.type === 'mcq' || q.type === 'wrong'){
+          const checked = el.querySelector('input[type=radio]:checked');
+          if(checked){
+            const selIndex = parseInt(checked.value,10); 
+            const origIndex = (q._shuffled && q._shuffled[selIndex] !== undefined) ? q._shuffled[selIndex] : selIndex;
+            res.userAnswer = origIndex;
+            res.correct = (origIndex === q.answerIndex);
+          } else {
+            res.userAnswer = null; res.correct = false;
+          }
+          res.explanation = q.explanation || '';
+          res.autoGraded = true;
+          
+        } else if(q.type === 'tf'){
+          const sel = el.querySelector('select');
+          res.userAnswer = (sel && sel.value !== '') ? (sel.value === 'true') : null;
+          res.correct = (typeof res.userAnswer === 'boolean' && res.userAnswer === q.answer);
+          res.explanation = q.explanation || '';
+          res.autoGraded = true;
+          
+        } else if(q.type === 'relation'){
+          const checked = el.querySelector('input[type=radio]:checked');
+          if(checked){
+            res.userAnswer = checked.value;
+            res.correct = (res.userAnswer === q.correctOption);
+          } else {
+            res.userAnswer = null; res.correct = false;
+          }
+          res.explanation = q.explanation || '';
+          res.autoGraded = true;
+          
+        } else if(q.type === 'multiRelation'){
+          const checked = Array.from(el.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.dataset.label).filter(Boolean);
+          res.userAnswer = checked;
+          const expected = (q.answers || []).map(x=>String(x).trim().toUpperCase());
+          res.correct = arraysEqualIgnoreOrder(expected, checked || []);
+          res.explanation = q.explanation || '';
+          res.autoGraded = true;
+          
+        } else if(q.type === 'essay'){
+          const ta = el.querySelector('textarea');
+          res.userAnswer = ta ? ta.value.trim() : '';
+          if(apiKey && res.userAnswer){
+            try{
+              const prompt = buildEssayGradingPrompt(q.text, q.answer || '', res.userAnswer);
+              const aiResp = await callGenerativeAPI(apiKey, prompt);
+              const parsed = tryParseScoreFeedback(aiResp);
+              if(parsed){
+                res.autoGraded = true;
+                res.score = parsed.score;
+                res.feedback = parsed.feedback;
+                res.label = parsed.score >= 6 ? 'Bom' : 'Precisa melhorar';
+                res.correct = parsed.score >= 6;
+              } else {
+                res.autoGraded = true;
+                res.feedback = aiResp; 
+                res.correct = false;
+              }
+            }catch(err){
+              console.warn('AI grading failed', err);
+              res.autoGraded = false;
+              res.feedback = `Erro ao contatar IA: ${err.message}`;
+            }
+          } else {
+            res.autoGraded = false;
+            res.feedback = 'Correção automática não disponível (sem chave de API ou sem resposta).';
+          }
+        } else {
+          res.autoGraded = false;
+        }
+        results.push(res);
+      }
+      return results;
+    }
 
-/* ---------- Timer ---------- */
-let timerInterval = null;
-function startTimer(seconds){
-  if(timerInterval) clearInterval(timerInterval);
-  let s = seconds;
-  function update(){
-    const mm = String(Math.floor(s/60)).padStart(2,'0');
-    const ss = String(s%60).padStart(2,'0');
-    timerEl.textContent = `${mm}:${ss}`;
-    if(s>0) s--; else clearInterval(timerInterval);
-  }
-  update();
-  timerInterval = setInterval(update,1000);
-}
+    /* ---------- Render results ---------- */
+    function renderResults(results){
+      resultArea.classList.remove('hidden');
+      let html = `<h3>Resultado</h3>`;
+      let correctCount = 0;
+      
+      results.forEach(r => {
+          if (r.type === 'essay') {
+              if (r.autoGraded && typeof r.score === 'number' && r.score >= 6) {
+                  correctCount++;
+              }
+          } else if (r.correct) {
+              correctCount++;
+          }
+      });
 
-/* ---------- Utilities ---------- */
-function escapeHtml(s){
-  if(!s) return '';
-  return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
-}
+      html += `<div class="summary"><strong>Total de Acertos:</strong> ${correctCount} / ${results.length} questões</div>`;
+      html += `<div style="margin-top:10px">`;
+      
+      results.forEach((r, idx) => {
+        html += `<div class="q"><h3>${idx+1}. ${escapeHtml(r.question.text)}</h3>`; 
+        
+        if(r.type === 'essay'){
+          if(r.autoGraded){
+            const score = (typeof r.score === 'number') ? r.score : '—';
+            const statusClass = (typeof r.score === 'number' && r.score >= 6) ? 'result-correct' : 'result-wrong';
+            html += `<div class="tiny ${statusClass}">Nota (auto): <strong>${score}</strong> / 10 <span class="pill">${r.label || ''}</span></div>`;
+            html += `<div class="explain"><strong>Feedback:</strong> ${escapeHtml(r.feedback || 'Sem feedback.')}</div>`;
+          } else {
+            html += `<div class="tiny">Avaliação automática indisponível.</div>`;
+            if (r.feedback) { 
+                 html += `<div class="explain result-wrong"><strong>Info:</strong> ${escapeHtml(r.feedback)}</div>`;
+            }
+            html += `<div class="explain"><strong>Resposta esperada:</strong> ${escapeHtml(r.question.answer || '—')}</div>`;
+          }
+        } else {
+          if(r.correct){
+            html += `<div class="result-correct">✔ Correto</div>`;
+            if(r.explanation) {
+                 html += `<div class="explain"><strong>Explicação:</strong> ${escapeHtml(r.explanation)}</div>`;
+            }
+          } else {
+            html += `<div class="result-wrong">✖ Errado</div>`;
+            html += `<div class="explain"><strong>Explicação:</strong> ${escapeHtml(r.explanation || '—')}</div>`;
+          }
+        }
+        html += `</div>`;
+      });
+      html += `</div>`;
+      html += `<div class="summary" style="margin-top:12px"><strong>Pontuação Final:</strong> ${correctCount} / ${results.length}</div>`;
+      resultArea.innerHTML = html;
+    }
 
-/* ---------- On load: initialize minimal state ---------- */
-(function init(){
-  // no pre-generation, wait user action
-})();
+    /* ---------- Timer ---------- */
+    function startTimer(seconds){
+      if(timerInterval) clearInterval(timerInterval);
+      let s = seconds;
+      function tick(){ const mm = String(Math.floor(s/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0'); timerEl.textContent = `${mm}:${ss}`; if(s>0) s--; else clearInterval(timerInterval); }
+      tick();
+      timerInterval = setInterval(tick, 1000);
+    }
 
-</script>
+    /* ---------- AI utils (CORRIGIDO para API Gemini) ---------- */
+    async function callGenerativeAPI(apiKey, prompt) {
+        const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + encodeURIComponent(apiKey);
+        const body = {
+            contents: [ { parts: [{ "text": prompt }] } ],
+            generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 512,
+                topK: 1,
+                topP: 1
+            }
+        };
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        if (!resp.ok) {
+            const txt = await resp.text();
+            throw new Error('API error: ' + resp.status + ' - ' + txt);
+        }
+        const j = await resp.json();
+        try {
+            const textOut = j.candidates[0].content.parts[0].text;
+            return textOut;
+        } catch (e) {
+            console.error("Erro ao parsear resposta da API Gemini:", j);
+            throw new Error('Formato de resposta inesperado da API.');
+        }
+    }
+
+    function tryParseScoreFeedback(aiText){
+      try{
+        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        if(jsonMatch){
+          const obj = JSON.parse(jsonMatch[0]);
+          if(typeof obj.score !== 'undefined') {
+              return { score: Number(obj.score), feedback: String(obj.feedback || '') };
+          }
+        }
+      }catch(e){
+          console.warn("Falha ao parsear JSON da IA:", e);
+      }
+      const scoreMatch = aiText.match(/score[:\s]*([0-9]+(?:\.[0-9]+)?)/i);
+      if(scoreMatch){
+        const s = Number(scoreMatch[1]);
+        const fb = aiText.replace(scoreMatch[0],'').trim();
+        return { score: s, feedback: fb };
+      }
+      console.warn("Não foi possível encontrar 'score' ou JSON na resposta da IA:", aiText);
+      return null;
+    }
+    function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){
+      return `Você é um avaliador especialista no assunto. Leia a questão e a resposta do aluno. Retorne apenas um JSON válido com o formato:
+    {"score": NotaEntre0e10, "feedback": "comentários objetivos, pontos fortes e pontos a melhorar (curto)"}
+
+    Questão:
+    ${questionText}
+
+    Resposta esperada (contexto):
+    ${expectedAnswer}
+
+    Resposta do aluno:
+    ${studentAnswer}
+
+    Avalie a resposta do aluno comparando com o esperado. Seja objetivo e devolva somente o JSON.`;
+    }
+
+    /* ---------- Init ---------- */
+    (function init(){
+      // pronto
+    })();
+  </script>
+  
 </body>
 </html>
