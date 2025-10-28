@@ -85,49 +85,24 @@
     }
 
     .q{padding:12px;border-radius:8px;background:rgba(255,255,255,0.01);margin-bottom:12px}
-    .q h3{margin:0;font-size:1rem; margin-bottom: 10px;}
+    /* Aumenta espaço abaixo do título para melhor leitura das afirmações */
+    .q h3{margin:0;font-size:1rem; margin-bottom: 12px;} 
     .options{margin-top:8px}
     
-    /* Estilo padrão para opções (radio/select) */
     .option { 
-        display:block; 
+        display: block; /* Volta a ser block, layout padrão de radio buttons */
         margin: 8px 0; 
+        line-height: 1.5; /* Melhora espaçamento vertical do texto */
     }
-    .option input[type="radio"] { /* Pequeno ajuste vertical */
-        margin-right: 5px;
-        vertical-align: middle;
+    .option input[type="radio"] { 
+        margin-right: 6px; /* Espaço entre radio e texto */
+        vertical-align: middle; /* Alinha radio com a primeira linha do texto */
     }
     .option select {
-        max-width: 200px; /* Limita largura do select V/F */
+        max-width: 200px; 
     }
-
-    /* --- INÍCIO DA CORREÇÃO MULTIRELATION --- */
-    .multi-relation { 
-        display:flex; 
-        flex-direction:column; 
-        gap: 10px; /* Aumenta espaço vertical entre afirmações */
-        margin-top: 12px; 
-    }
-    .multi-relation label {
-        display: flex; /* Alinha checkbox, número e texto */
-        align-items: flex-start; /* Alinha no topo */
-        gap: 8px; /* Espaço entre os elementos */
-        cursor: pointer;
-    }
-    .multi-relation label input[type="checkbox"] {
-        flex-shrink: 0; /* Impede checkbox de encolher */
-        margin-top: 3px; /* Ajuste fino vertical */
-    }
-    .multi-relation label strong {
-        flex-shrink: 0; /* Impede número de encolher */
-        min-width: 20px; /* Garante espaço para o número */
-        padding-top: 1px; /* Ajuste fino vertical */
-    }
-    .multi-relation label span {
-        word-break: break-word; /* Permite quebrar palavras longas */
-        line-height: 1.4; /* Melhora legibilidade do texto quebrado */
-    }
-    /* --- FIM DA CORREÇÃO MULTIRELATION --- */
+    
+    /* Remove estilos de .multi-relation pois não existe mais */
 
     textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
     .result-area{margin-top:12px}
@@ -232,15 +207,66 @@
   <script>
     /* Conteúdo do script.js colado aqui */
 
-    /* ---------- Conteúdo (POO) ---------- */
-    const POO_CONTENT = { /* ... (Conteúdo POO completo aqui, igual ao anterior) ... */ 
-      miniSimulado: [ { type: "essay", id: "p_essay1", text: "Uma classe RelatorioService possui um método que, baseado em um parâmetro, usa uma série de if/else para decidir se o relatório deve ser gerado em PDF, Excel ou CSV. Explique qual princípio SOLID isso viola e por quê.", answer: "Viola o Princípio Aberto/Fechado (OCP). Porque para adicionar um novo formato de relatório (ex: HTML), o desenvolvedor é obrigado a modificar a classe RelatorioService adicionando um novo else if." }, { type: "essay", id: "p_essay2", text: "Descreva brevemente o que é a arquitetura de Microsserviços e por que ela seria uma boa escolha para um sistema financeiro que precisa escalar apenas o módulo de processamento de transações.", answer: "É uma arquitetura que divide o sistema em serviços menores e independentes. Ela é uma boa escolha nesse cenário pois permite escalabilidade granular: em vez de escalar o sistema inteiro (como no monolito), a empresa pode escalar apenas o microsserviço de processamento de transações, que é o que recebe a alta demanda." }, { type: "tf", id: "p_vf1", text: "O Princípio da Inversão de Dependência (DIP) afirma que módulos de alto nível, como FaturaService, devem depender diretamente de módulos de baixo nível, como EmailSender.", answer: false, explanation: "Falso (O DIP afirma o exato oposto: módulos de alto nível devem depender de abstrações/interfaces, e não de classes concretas de baixo nível)." }, { type: "tf", id: "p_vf2", text: "Na arquitetura Serverless, os servidores não existem mais, e o código é executado sem nenhuma infraestrutura física.", answer: false, explanation: "Falso (Os servidores ainda existem, mas eles são gerenciados pelo provedor de nuvem, não por você)." }, { type: "relation", id: "p_rel1", text: "I. Uma classe PedidoService que calcula o total do pedido e também registra logs detalhados em um arquivo de texto viola o Princípio da Responsabilidade Única (SRP). PORQUE II. Essa classe possui mais de um motivo para ser alterada: uma mudança na regra de cálculo de total ou uma mudança no formato do log.", correctOption: "D", explanation: "As duas são verdadeiras, e a II justifica a I (A classe viola o SRP exatamente porque tem dois motivos para mudar: as regras de negócio e as regras de log )." }, { type: "relation", id: "p_rel2", text: "I. Uma interface Notificador que obriga todas as classes a implementar enviarEmail(), enviarSMS() e enviarPush(), mesmo que elas não usem todos, viola o Princípio da Segregação de Interfaces (ISP). PORQUE II. O Princípio da Responsabilidade Única (SRP) afirma que interfaces não devem ser 'gordas'.", correctOption: "B", explanation: "A asserção I é verdadeira, e a II é falsa (A I está correta, é uma violação do ISP. A II está errada; a descrição 'interfaces não devem ser gordas' é do ISP, não do SRP )." }, { type: "mcq", id: "p_mcq1", text: "Em um sistema de pagamentos, a classe base Pagamento tem o método processar(). A subclasse PagamentoBoleto implementa processar() lançando uma exceção 'Operação não suportada'. Qual princípio SOLID foi violado?", choices: ["Princípio Aberto/Fechado (OCP)", "Princípio da Substituição de Liskov (LSP)", "Princípio da Inversão de Dependência (DIP)", "Princípio da Segregação de Interfaces (ISP)"], answerIndex: 1, explanation: "A resposta correta é B: Princípio da Substituição de Liskov (LSP). A subclasse não se comporta como a classe mãe, quebrando o contrato e tornando-a não substituível." }, { type: "mcq", id: "p_mcq2", text: "No padrão MVC, qual camada é responsável por conter os dados e as regras de negócio do sistema?", choices: ["View", "Controller", "Model", "Service"], answerIndex: 2, explanation: "A resposta correta é C: O Model contém os dados e as regras de negócio." }, { type: "wrong", id: "p_w1", text: "Sobre Arquitetura de Microsserviços, marque a afirmativa INCORRETA:", choices: ["Ajuda a escalar partes específicas de um sistema financeiro, como o processamento de transações.", "É um sistema dividido em serviços menores e independentes.", "Um desafio comum é a complexidade na comunicação entre os serviços.", "É considerada uma arquitetura mais simples de implantar e gerenciar do que um Monolito."], answerIndex: 3, explanation: "A afirmativa D é incorreta. Microsserviços são mais complexos de implantar e gerenciar do que um Monolito, embora o Monolito seja mais simples *inicialmente*." }, { type: "wrong", id: "p_w2", text: "Sobre o Princípio da Inversão de Dependência (DIP), marque a afirmativa INCORRETA:", choices: ["Módulos de alto nível devem depender de abstrações (interfaces).", "Módulos de baixo nível (classes concretas) devem implementar as abstrações.", "NotificationManager instanciando new SmsService() é uma violação do DIP.", "O principal benefício do DIP é garantir que a classe filha possa substituir a classe mãe sem quebrar o sistema."], answerIndex: 3, explanation: "A afirmativa D é incorreta. O benefício descrito (filha substituir a mãe) é do Princípio da Substituição de Liskov (LSP), não do DIP." }, { type: "multiRelation", id: "p_mult1", text: "Considere as afirmações sobre interfaces (ISP):\nI. Uma interface Notificador com enviarEmail(), enviarSMS() e enviarPush() força implementações a métodos que podem não usar.\nII. Isso viola o ISP.\nIII. Segregar em interfaces menores (INotificadorEmail, INotificadorSMS) é recomendado.\nIV. SRP é aplicável a interfaces e diz que interfaces não devem ter mais de um método.\nV. Uma interface 'gorda' melhora a reutilização em todos os casos.", answers: ["I","II","III"], explanation: "I, II e III são verdadeiras; IV (ISP fala sobre interfaces 'gordas', não SRP) e V são falsas." } ]
+    /* ---------- Conteúdo (POO - Modificado multiRelation para MCQ) ---------- */
+    const POO_CONTENT = {
+      miniSimulado: [
+        { type: "essay", id: "p_essay1", text: "Uma classe RelatorioService possui um método que, baseado em um parâmetro, usa uma série de if/else para decidir se o relatório deve ser gerado em PDF, Excel ou CSV. Explique qual princípio SOLID isso viola e por quê.", answer: "Viola o Princípio Aberto/Fechado (OCP). Porque para adicionar um novo formato de relatório (ex: HTML), o desenvolvedor é obrigado a modificar a classe RelatorioService adicionando um novo else if." },
+        { type: "essay", id: "p_essay2", text: "Descreva brevemente o que é a arquitetura de Microsserviços e por que ela seria uma boa escolha para um sistema financeiro que precisa escalar apenas o módulo de processamento de transações.", answer: "É uma arquitetura que divide o sistema em serviços menores e independentes. Ela é uma boa escolha nesse cenário pois permite escalabilidade granular: em vez de escalar o sistema inteiro (como no monolito), a empresa pode escalar apenas o microsserviço de processamento de transações, que é o que recebe a alta demanda." }, 
+        { type: "tf", id: "p_vf1", text: "O Princípio da Inversão de Dependência (DIP) afirma que módulos de alto nível, como FaturaService, devem depender diretamente de módulos de baixo nível, como EmailSender.", answer: false, explanation: "Falso (O DIP afirma o exato oposto: módulos de alto nível devem depender de abstrações/interfaces, e não de classes concretas de baixo nível)." }, 
+        { type: "tf", id: "p_vf2", text: "Na arquitetura Serverless, os servidores não existem mais, e o código é executado sem nenhuma infraestrutura física.", answer: false, explanation: "Falso (Os servidores ainda existem, mas eles são gerenciados pelo provedor de nuvem, não por você)." }, 
+        { type: "relation", id: "p_rel1", text: "I. Uma classe PedidoService que calcula o total do pedido e também registra logs detalhados em um arquivo de texto viola o Princípio da Responsabilidade Única (SRP). PORQUE II. Essa classe possui mais de um motivo para ser alterada: uma mudança na regra de cálculo de total ou uma mudança no formato do log.", correctOption: "D", explanation: "As duas são verdadeiras, e a II justifica a I (A classe viola o SRP exatamente porque tem dois motivos para mudar: as regras de negócio e as regras de log )." }, 
+        { type: "relation", id: "p_rel2", text: "I. Uma interface Notificador que obriga todas as classes a implementar enviarEmail(), enviarSMS() e enviarPush(), mesmo que elas não usem todos, viola o Princípio da Segregação de Interfaces (ISP). PORQUE II. O Princípio da Responsabilidade Única (SRP) afirma que interfaces não devem ser 'gordas'.", correctOption: "B", explanation: "A asserção I é verdadeira, e a II é falsa (A I está correta, é uma violação do ISP. A II está errada; a descrição 'interfaces não devem ser gordas' é do ISP, não do SRP )." }, 
+        { type: "mcq", id: "p_mcq1", text: "Em um sistema de pagamentos, a classe base Pagamento tem o método processar(). A subclasse PagamentoBoleto implementa processar() lançando uma exceção 'Operação não suportada'. Qual princípio SOLID foi violado?", choices: ["Princípio Aberto/Fechado (OCP)", "Princípio da Substituição de Liskov (LSP)", "Princípio da Inversão de Dependência (DIP)", "Princípio da Segregação de Interfaces (ISP)"], answerIndex: 1, explanation: "A resposta correta é B: Princípio da Substituição de Liskov (LSP). A subclasse não se comporta como a classe mãe, quebrando o contrato e tornando-a não substituível." }, 
+        { type: "mcq", id: "p_mcq2", text: "No padrão MVC, qual camada é responsável por conter os dados e as regras de negócio do sistema?", choices: ["View", "Controller", "Model", "Service"], answerIndex: 2, explanation: "A resposta correta é C: O Model contém os dados e as regras de negócio." }, 
+        { type: "wrong", id: "p_w1", text: "Sobre Arquitetura de Microsserviços, marque a afirmativa INCORRETA:", choices: ["Ajuda a escalar partes específicas de um sistema financeiro, como o processamento de transações.", "É um sistema dividido em serviços menores e independentes.", "Um desafio comum é a complexidade na comunicação entre os serviços.", "É considerada uma arquitetura mais simples de implantar e gerenciar do que um Monolito."], answerIndex: 3, explanation: "A afirmativa D é incorreta. Microsserviços são mais complexos de implantar e gerenciar do que um Monolito, embora o Monolito seja mais simples *inicialmente*." }, 
+        { type: "wrong", id: "p_w2", text: "Sobre o Princípio da Inversão de Dependência (DIP), marque a afirmativa INCORRETA:", choices: ["Módulos de alto nível devem depender de abstrações (interfaces).", "Módulos de baixo nível (classes concretas) devem implementar as abstrações.", "NotificationManager instanciando new SmsService() é uma violação do DIP.", "O principal benefício do DIP é garantir que a classe filha possa substituir a classe mãe sem quebrar o sistema."], answerIndex: 3, explanation: "A afirmativa D é incorreta. O benefício descrito (filha substituir a mãe) é do Princípio da Substituição de Liskov (LSP), não do DIP." }, 
+        // Convertido de multiRelation para mcq
+        { 
+          type: "mcq", 
+          id: "p_mult1_mcq", 
+          text: "Considere as afirmações sobre interfaces (ISP):\nI. Uma interface Notificador com enviarEmail(), enviarSMS() e enviarPush() força implementações a métodos que podem não usar.\nII. Isso viola o ISP.\nIII. Segregar em interfaces menores (INotificadorEmail, INotificadorSMS) é recomendado.\nIV. SRP é aplicável a interfaces e diz que interfaces não devem ter mais de um método.\nV. Uma interface 'gorda' melhora a reutilização em todos os casos.", 
+          choices: [
+              "A) Apenas as afirmações I e II estão corretas.",
+              "B) Apenas as afirmações I, II e IV estão corretas.",
+              "C) Apenas as afirmações I, II e III estão corretas.",
+              "D) Todas as afirmações estão corretas."
+          ],
+          answerIndex: 2, // C é a correta (I, II, III)
+          explanation: "I, II e III são verdadeiras; IV (ISP fala sobre interfaces 'gordas', não SRP) e V são falsas." 
+        }
+      ]
     };
 
-    /* ---------- Conteúdo (WEB) ---------- */
-    const WEB_CONTENT = { /* ... (Conteúdo WEB completo aqui, igual ao anterior) ... */ 
-      miniSimulado: [ { type: "essay", id: "w_essay1", text: "Explique o que é uma API e como ela facilita a integração entre dois sistemas, como um aplicativo de celular e um servidor web.", answer: "Uma API é um conjunto de regras que permite a comunicação entre sistemas. Ela facilita a integração permitindo que o aplicativo de celular (cliente) envie requisições (ex: GET /produtos) para o servidor. O servidor processa o pedido, busca no banco de dados e retorna os dados em JSON, que o aplicativo entende e exibe ao usuário." }, { type: "essay", id: "w_essay2", text: "Descreva como ocorre a comunicação entre o frontend e o backend no processo de um usuário realizando um login.", answer: "O usuário preenche o formulário (frontend), o JavaScript envia uma requisição POST para /login contendo o JSON com email e senha. O backend (servidor) recebe, busca o usuário, compara a senha enviada com a senha criptografada no banco. Se bater, ele retorna uma resposta de sucesso (ex: um token); se não, retorna um erro de autenticação." }, { type: "tf", id: "w_vf1", text: "O Node.js é um ambiente de execução que permite ao JavaScript do frontend (navegador) acessar diretamente o banco de dados do servidor para maior performance.", answer: false, explanation: "Node.js permite ao servidor acessar o banco de dados, não ao frontend." }, { type: "tf", id: "w_vf2", text: "Para converter uma string de texto no formato JSON para um objeto JavaScript utilizável, deve-se usar o método JSON.stringify().", answer: false, explanation: "Para converter JSON (string) para Objeto JS, usa-se JSON.parse(). JSON.stringify() faz o oposto." }, { type: "relation", id: "w_rel1", text: "I. O verbo HTTP POST é usado para criar um novo recurso, enquanto o verbo PUT é usado para atualizar/substituir um recurso existente. PORQUE II. A principal diferença entre eles é que o PUT é idempotente (várias chamadas têm o mesmo resultado), enquanto o POST não é (várias chamadas criam vários recursos).", correctOption: "D", explanation: "As duas são verdadeiras, e a II justifica a I (A I define os verbos. A II explica a razão da diferença técnica (idempotência), o que justifica a separação de uso entre criar e atualizar )." }, { type: "relation", id: "w_rel2", text: "I. O JSON é considerado o formato de dados mais compatível com o JavaScript. PORQUE II. A estrutura de um objeto JSON é idêntica à de um objeto JavaScript, não necessitando de nenhuma conversão para ser utilizado no código.", correctOption: "B", explanation: "A asserção I é verdadeira, e a II é falsa (A I é verdadeira, a sintaxe é muito compatível. A II é falsa; JSON é uma string e precisa de conversão (JSON.parse()) para virar um objeto JS. Além disso, chaves JSON precisam de aspas duplas, diferente de objetos JS)." }, { type: "mcq", id: "w_mcq1", text: "Qual é a principal função do backend em uma aplicação web?", choices: ["Tornar a página interativa com animações e validação de formulários.", "Armazenar os dados de login e senha no localStorage do navegador.", "Executar a lógica de negócio, acessar o banco de dados e gerenciar a autenticação.", "Renderizar o HTML e o CSS que o usuário vê na tela."], answerIndex: 2, explanation: "A resposta correta é C: O backend executa a lógica de negócio, acessa o banco de dados e gerencia a autenticação." }, { type: "mcq", id: "w_mcq2", text: "Qual é a forma correta de lidar com um erro que pode ocorrer em uma função async no Node.js?", choices: ["Usando if (error) após a chamada da função.", "Usando o método .catch() no final da chamada await.", "Envolvendo a chamada await (que pode falhar) dentro de um bloco try...catch.", "O await já trata os erros automaticamente, não sendo necessário nenhum bloco extra."], answerIndex: 2, explanation: "A resposta correta é C: A forma padrão de tratar erros com async/await é usando try...catch." }, { type: "wrong", id: "w_w1", text: "Sobre os verbos HTTP e APIs RESTful, marque a afirmativa INCORRETA:", choices: ["GET é usado para buscar dados de um recurso.", "DELETE é usado para remover um recurso.", "POST é usado para atualizar completamente um recurso que já existe.", "Uma boa prática de API RESTful é usar substantivos nos endpoints, como /usuarios."], answerIndex: 2, explanation: "A afirmativa C é incorreta. POST é usado para criar um novo recurso; PUT (ou PATCH) é usado para atualizar." }, { type: "wrong", id: "w_w2", text: "Sobre o processo de autenticação no backend, marque a afirmativa INCORRETA:", choices: ["O backend recebe os dados de login (email e senha) do frontend.", "O backend deve usar criptografia ao armazenar e verificar senhas.", "Uma boa prática é armazenar a senha do usuário em texto puro no banco de dados para facilitar a verificação.", "O servidor retorna uma resposta de sucesso (geralmente com um token) ou uma resposta de erro."], answerIndex: 2, explanation: "A afirmativa C é incorreta. Armazenar senhas em texto puro é uma falha grave de segurança." }, { type: "multiRelation", id: "w_mult1", text: "Considere as afirmações sobre JSON e JS:\nI. JSON é uma string textual.\nII. JSON.parse() converte string JSON em objeto JS.\nIII. JSON.stringify() converte objeto JS para string JSON.\nIV. Em JSON, as chaves não precisam estar entre aspas.\nV. JSON e objeto JS são o mesmo sem conversão.", answers: ["I","II","III"], explanation: "I, II e III verdadeiras; IV (chaves JSON *precisam* de aspas) e V são falsas." } ]
+    /* ---------- Conteúdo (WEB - Modificado multiRelation para MCQ) ---------- */
+    const WEB_CONTENT = {
+      miniSimulado: [
+        { type: "essay", id: "w_essay1", text: "Explique o que é uma API e como ela facilita a integração entre dois sistemas, como um aplicativo de celular e um servidor web.", answer: "Uma API é um conjunto de regras que permite a comunicação entre sistemas. Ela facilita a integração permitindo que o aplicativo de celular (cliente) envie requisições (ex: GET /produtos) para o servidor. O servidor processa o pedido, busca no banco de dados e retorna os dados em JSON, que o aplicativo entende e exibe ao usuário." }, 
+        { type: "essay", id: "w_essay2", text: "Descreva como ocorre a comunicação entre o frontend e o backend no processo de um usuário realizando um login.", answer: "O usuário preenche o formulário (frontend), o JavaScript envia uma requisição POST para /login contendo o JSON com email e senha. O backend (servidor) recebe, busca o usuário, compara a senha enviada com a senha criptografada no banco. Se bater, ele retorna uma resposta de sucesso (ex: um token); se não, retorna um erro de autenticação." }, 
+        { type: "tf", id: "w_vf1", text: "O Node.js é um ambiente de execução que permite ao JavaScript do frontend (navegador) acessar diretamente o banco de dados do servidor para maior performance.", answer: false, explanation: "Node.js permite ao servidor acessar o banco de dados, não ao frontend." }, 
+        { type: "tf", id: "w_vf2", text: "Para converter uma string de texto no formato JSON para um objeto JavaScript utilizável, deve-se usar o método JSON.stringify().", answer: false, explanation: "Para converter JSON (string) para Objeto JS, usa-se JSON.parse(). JSON.stringify() faz o oposto." }, 
+        { type: "relation", id: "w_rel1", text: "I. O verbo HTTP POST é usado para criar um novo recurso, enquanto o verbo PUT é usado para atualizar/substituir um recurso existente. PORQUE II. A principal diferença entre eles é que o PUT é idempotente (várias chamadas têm o mesmo resultado), enquanto o POST não é (várias chamadas criam vários recursos).", correctOption: "D", explanation: "As duas são verdadeiras, e a II justifica a I (A I define os verbos. A II explica a razão da diferença técnica (idempotência), o que justifica a separação de uso entre criar e atualizar )." }, 
+        { type: "relation", id: "w_rel2", text: "I. O JSON é considerado o formato de dados mais compatível com o JavaScript. PORQUE II. A estrutura de um objeto JSON é idêntica à de um objeto JavaScript, não necessitando de nenhuma conversão para ser utilizado no código.", correctOption: "B", explanation: "A asserção I é verdadeira, e a II é falsa (A I é verdadeira, a sintaxe é muito compatível. A II é falsa; JSON é uma string e precisa de conversão (JSON.parse()) para virar um objeto JS. Além disso, chaves JSON precisam de aspas duplas, diferente de objetos JS)." }, 
+        { type: "mcq", id: "w_mcq1", text: "Qual é a principal função do backend em uma aplicação web?", choices: ["Tornar a página interativa com animações e validação de formulários.", "Armazenar os dados de login e senha no localStorage do navegador.", "Executar a lógica de negócio, acessar o banco de dados e gerenciar a autenticação.", "Renderizar o HTML e o CSS que o usuário vê na tela."], answerIndex: 2, explanation: "A resposta correta é C: O backend executa a lógica de negócio, acessa o banco de dados e gerencia a autenticação." }, 
+        { type: "mcq", id: "w_mcq2", text: "Qual é a forma correta de lidar com um erro que pode ocorrer em uma função async no Node.js?", choices: ["Usando if (error) após a chamada da função.", "Usando o método .catch() no final da chamada await.", "Envolvendo a chamada await (que pode falhar) dentro de um bloco try...catch.", "O await já trata os erros automaticamente, não sendo necessário nenhum bloco extra."], answerIndex: 2, explanation: "A resposta correta é C: A forma padrão de tratar erros com async/await é usando try...catch." }, 
+        { type: "wrong", id: "w_w1", text: "Sobre os verbos HTTP e APIs RESTful, marque a afirmativa INCORRETA:", choices: ["GET é usado para buscar dados de um recurso.", "DELETE é usado para remover um recurso.", "POST é usado para atualizar completamente um recurso que já existe.", "Uma boa prática de API RESTful é usar substantivos nos endpoints, como /usuarios."], answerIndex: 2, explanation: "A afirmativa C é incorreta. POST é usado para criar um novo recurso; PUT (ou PATCH) é usado para atualizar." }, 
+        { type: "wrong", id: "w_w2", text: "Sobre o processo de autenticação no backend, marque a afirmativa INCORRETA:", choices: ["O backend recebe os dados de login (email e senha) do frontend.", "O backend deve usar criptografia ao armazenar e verificar senhas.", "Uma boa prática é armazenar a senha do usuário em texto puro no banco de dados para facilitar a verificação.", "O servidor retorna uma resposta de sucesso (geralmente com um token) ou uma resposta de erro."], answerIndex: 2, explanation: "A afirmativa C é incorreta. Armazenar senhas em texto puro é uma falha grave de segurança." }, 
+        // Convertido de multiRelation para mcq
+        { 
+          type: "mcq", 
+          id: "w_mult1_mcq", 
+          text: "Considere as afirmações sobre JSON e JS:\nI. JSON é uma string textual.\nII. JSON.parse() converte string JSON em objeto JS.\nIII. JSON.stringify() converte objeto JS para string JSON.\nIV. Em JSON, as chaves não precisam estar entre aspas.\nV. JSON e objeto JS são o mesmo sem conversão.", 
+          choices: [
+              "A) Apenas as afirmações I e II estão corretas.",
+              "B) Apenas as afirmações I, II e IV estão corretas.",
+              "C) Apenas as afirmações I, II e III estão corretas.",
+              "D) Apenas as afirmações IV e V estão corretas."
+          ],
+          answerIndex: 2, // C é a correta (I, II, III)
+          explanation: "I, II e III verdadeiras; IV (chaves JSON *precisam* de aspas) e V são falsas." 
+        }
+      ]
     };
+
 
     /* ---------- Helpers ---------- */
     function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
@@ -279,7 +305,7 @@
       document.querySelectorAll('#quizArea input[type=radio]').forEach(i=>i.checked=false);
       document.querySelectorAll('#quizArea textarea, #quizArea input[type=text]').forEach(i=>i.value='');
       document.querySelectorAll('#quizArea select').forEach(s=>s.selectedIndex=0);
-      document.querySelectorAll('#quizArea input[type=checkbox]').forEach(c=>c.checked=false);
+      document.querySelectorAll('#quizArea input[type=checkbox]').forEach(c=>c.checked=false); // Mantido por segurança, mas não deve haver checkboxes
     });
     btnSubmit.addEventListener('click', async ()=> {
       if(!currentQuiz) return;
@@ -298,7 +324,7 @@
     });
 
     
-    /* ---------- Question selection (CORRIGIDA E OTIMIZADA) ---------- */
+    /* ---------- Question selection (Mantido com correção de contagem) ---------- */
     function pickQuestions(count, subject){
       const poolBase = (subject === 'POO') ? POO_CONTENT.miniSimulado.slice() : WEB_CONTENT.miniSimulado.slice();
       const pool = poolBase.map(q => JSON.parse(JSON.stringify(q)));
@@ -350,7 +376,7 @@
       return selected.slice(0,count);
     }
 
-    /* ---------- Render quiz (Revertido, sem spans extras) ---------- */
+    /* ---------- Render quiz (Removido multiRelation) ---------- */
     function generateQuiz(count=15, subject='POO', apiKey='', regenerate=false){
       const questions = pickQuestions(count, subject);
       currentQuiz = { questions, subject, apiKey, created: new Date() };
@@ -365,9 +391,8 @@
         const card = document.createElement('div'); card.className = 'q'; card.id = domId;
         const title = document.createElement('h3'); 
         
-        if (q.type !== 'multiRelation') {
-            title.innerHTML = `${idx+1}. ${q.text}`;
-        }
+        // Exibe o texto completo para todas as questões agora
+        title.innerHTML = `${idx+1}. ${q.text}`; 
         card.appendChild(title);
 
         const opts = document.createElement('div'); opts.className = 'options';
@@ -380,11 +405,11 @@
           q._shuffled = indexed.map(it=>it.orig); 
           indexed.forEach((it,j)=>{
             const label = document.createElement('label'); label.className='option';
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`; // Sem span extra
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> ${escapeHtml(it.text)}`; 
             opts.appendChild(label);
           });
         } else if(q.type === 'tf'){
-          const sel = document.createElement('select'); sel.className='option'; // Classe option aplicada aqui
+          const sel = document.createElement('select'); sel.className='option'; 
           sel.style.maxWidth = '200px'; 
           sel.innerHTML = `<option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option>`;
           opts.appendChild(sel);
@@ -399,40 +424,13 @@
           relationOptions.forEach(opt => {
             const label = document.createElement('label'); 
             label.className = 'option';
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`; // Sem span extra
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> ${escapeHtml(opt.text)}`; 
             opts.appendChild(label);
           });
           
-        } else if(q.type === 'multiRelation'){
-          const wrap = document.createElement('div'); wrap.className='multi-relation';
-          const lines = q.text.split('\n').map(s=>s.trim()).filter(Boolean);
-          let statements = [];
-          let prompt = q.text; 
-
-          if (q.statements && Array.isArray(q.statements)) {
-            statements = q.statements.slice();
-            prompt = lines[0] || q.text; 
-          } else if (lines.length > 1) {
-            prompt = lines[0]; 
-            statements = lines.slice(1);
-          } else {
-            statements = q.statements ? q.statements.slice() : ['I. (afirmação 1)','II. (afirmação 2)','III. (afirmação 3)','IV. (afirmação 4)','V. (afirmação 5)'];
-          }
-          
-          title.innerHTML = `${idx+1}. ${prompt}`;
-          
-          const romans = ['I','II','III','IV','V'];
-          for(let i=0;i<statements.length;i++){
-            const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
-            const label = document.createElement('label'); // A label tem display:flex pelo CSS
-            const idcb = uid('cb_');
-            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> ${escapeHtml(stmt)}`; // Sem span extra
-            wrap.appendChild(label);
-          }
-          if(!Array.isArray(q.answers)) q.answers = q.answers || [];
-          opts.appendChild(wrap);
-          
-        } else if(q.type === 'essay'){
+        } // Bloco multiRelation REMOVIDO 
+        
+        else if(q.type === 'essay'){
           const ta = document.createElement('textarea'); ta.className='answer'; ta.placeholder = 'Escreva sua resposta aqui...';
           opts.appendChild(ta);
         } else { opts.appendChild(document.createTextNode('Tipo não suportado.')); }
@@ -444,8 +442,8 @@
       startTimer(20*60);
     }
 
-    /* ---------- Grade answers ---------- */
-    async function gradeAnswers(apiKey){ /* ... (Código de gradeAnswers igual ao anterior) ... */ 
+    /* ---------- Grade answers (Removido multiRelation) ---------- */
+    async function gradeAnswers(apiKey){ 
        if(!currentQuiz) return [];
       const results = [];
       for(const q of currentQuiz.questions){
@@ -489,15 +487,9 @@
           res.explanation = q.explanation || '';
           res.autoGraded = true;
           
-        } else if(q.type === 'multiRelation'){
-          const checked = Array.from(el.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.dataset.label).filter(Boolean);
-          res.userAnswer = checked;
-          const expected = (q.answers || []).map(x=>String(x).trim().toUpperCase());
-          res.correct = arraysEqualIgnoreOrder(expected, checked || []);
-          res.explanation = q.explanation || '';
-          res.autoGraded = true;
-          
-        } else if(q.type === 'essay'){
+        } // Bloco multiRelation REMOVIDO
+        
+        else if(q.type === 'essay'){
           const ta = el.querySelector('textarea');
           res.userAnswer = ta ? ta.value.trim() : '';
           if(apiKey && res.userAnswer){
@@ -535,7 +527,7 @@
     }
 
     /* ---------- Render results ---------- */
-    function renderResults(results){ /* ... (Código de renderResults igual ao anterior) ... */ 
+    function renderResults(results){ 
       resultArea.classList.remove('hidden');
       let html = `<h3>Resultado</h3>`;
       let correctCount = 0;
@@ -588,7 +580,7 @@
     }
 
     /* ---------- Timer ---------- */
-    function startTimer(seconds){ /* ... (Código do timer igual ao anterior) ... */ 
+    function startTimer(seconds){ 
       if(timerInterval) clearInterval(timerInterval);
       let s = seconds;
       function tick(){ const mm = String(Math.floor(s/60)).padStart(2,'0'); const ss = String(s%60).padStart(2,'0'); timerEl.textContent = `${mm}:${ss}`; if(s>0) s--; else clearInterval(timerInterval); }
@@ -597,7 +589,7 @@
     }
 
     /* ---------- AI utils (API Gemini e Parse Aprimorado) ---------- */
-    async function callGenerativeAPI(apiKey, prompt) { /* ... (Código da API Gemini igual ao anterior) ... */ 
+    async function callGenerativeAPI(apiKey, prompt) { 
         const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + encodeURIComponent(apiKey);
         const body = {
             contents: [ { parts: [{ "text": prompt }] } ],
@@ -634,7 +626,7 @@
         }
     }
 
-    function tryParseScoreFeedback(aiText){ /* ... (Código de parse aprimorado igual ao anterior) ... */ 
+    function tryParseScoreFeedback(aiText){ 
       if (typeof aiText !== 'string' || !aiText) {
           console.warn("Texto inválido recebido para parsear score/feedback:", aiText);
           return null;
@@ -666,7 +658,7 @@
       return { score: null, feedback: "Não foi possível extrair a nota. Resposta da IA: " + aiText }; 
     }
     
-    function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){ /* ... (Código do prompt igual ao anterior) ... */ 
+    function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){ 
       return `Você é um avaliador especialista. Avalie a resposta do aluno para a questão abaixo.
 Retorne SOMENTE um objeto JSON válido no formato:
 \`\`\`json
