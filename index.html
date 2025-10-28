@@ -77,7 +77,7 @@
 
     .notice{margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
 
-    .quiz-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .quiz-header{display:flex;justify-content:space-between;align-items:center;gap:12px; flex-wrap: wrap;} /* Adicionado flex-wrap */
     .quiz-area{margin-top:12px}
 
     .quiz-area + .controls {
@@ -88,33 +88,40 @@
     .q h3{margin:0;font-size:1rem; margin-bottom: 10px;}
     .options{margin-top:8px}
     
-    /* --- INÍCIO DA CORREÇÃO DE RESPONSIVIDADE --- */
+    /* --- CORREÇÃO FINAL DE RESPONSIVIDADE --- */
     .option{
-      display:flex; /* Muda para flexbox */
-      gap:8px; /* Espaço entre o radio/check e o texto */
-      align-items:flex-start; /* Alinha no topo */
+      display:flex; 
+      gap:8px; 
+      align-items:flex-start; 
       margin: 10px 0;
     }
     .option input[type="radio"] {
-      flex-shrink: 0; /* Impede o radio button de encolher */
-      margin-top: 3px; /* Ajuste fino de alinhamento vertical */
+      flex-shrink: 0; 
+      margin-top: 3px; 
+    }
+    .option span {
+        word-break: break-word; /* Força quebra de linha no texto */
+        /* O span como flex item já ocupa o espaço restante */
     }
     
     .multi-relation { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
     .multi-relation label {
-      display:flex; /* Muda para flexbox */
-      gap:8px; /* Espaço */
-      align-items:flex-start; /* Alinha no topo */
+      display:flex; 
+      gap:8px; 
+      align-items:flex-start; 
     }
     .multi-relation label input[type="checkbox"] {
-      flex-shrink: 0; /* Impede o checkbox de encolher */
-      margin-top: 3px; /* Ajuste fino */
+      flex-shrink: 0; 
+      margin-top: 3px; 
     }
     .multi-relation label strong {
-      flex-shrink: 0; /* Impede o "I." de encolher */
+      flex-shrink: 0; 
     }
-    /* O <span> que será adicionado via JS vai quebrar a linha naturalmente */
-    /* --- FIM DA CORREÇÃO DE RESPONSIVIDADE --- */
+    .multi-relation label span {
+        word-break: break-word; /* Força quebra de linha no texto */
+         /* O span como flex item já ocupa o espaço restante */
+    }
+    /* --- FIM DA CORREÇÃO FINAL --- */
 
     textarea.answer{min-height:96px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:var(--text)}
     .result-area{margin-top:12px}
@@ -135,8 +142,7 @@
       .header h1{font-size:1.15rem}
       .pill{font-size:0.85rem}
       
-      /* Correção de responsividade bônus */
-      .quiz-header { flex-wrap: wrap; gap: 6px; }
+      .quiz-header { justify-content: flex-start; } /* Alinha itens no início em telas pequenas */
     }
   </style>
 </head>
@@ -483,7 +489,6 @@
           ri++; 
       }
       
-      // OTIMIZAÇÃO: Se 'count' for maior que a piscina, preenche com duplicatas
       if(selected.length < count){
         console.warn(`Piscina (${selected.length}) menor que o solicitado (${count}). Adicionando duplicatas.`);
         const needed = count - selected.length;
@@ -530,12 +535,12 @@
           q._shuffled = indexed.map(it=>it.orig); 
           indexed.forEach((it,j)=>{
             const label = document.createElement('label'); label.className='option';
-            // Adicionado <span> para quebra de linha
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> <span>${escapeHtml(it.text)}</span>`;
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${j}"> <span>${escapeHtml(it.text)}</span>`; // Adicionado span
             opts.appendChild(label);
           });
         } else if(q.type === 'tf'){
           const sel = document.createElement('select'); sel.className='option';
+          sel.style.maxWidth = '200px'; // Limita largura do select
           sel.innerHTML = `<option value="">-- escolha --</option><option value="true">Verdadeiro</option><option value="false">Falso</option>`;
           opts.appendChild(sel);
           
@@ -549,8 +554,7 @@
           relationOptions.forEach(opt => {
             const label = document.createElement('label'); 
             label.className = 'option';
-            // Adicionado <span> para quebra de linha
-            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> <span>${escapeHtml(opt.text)}</span>`;
+            label.innerHTML = `<input type="radio" name="${domId}_opt" value="${opt.value}"> <span>${escapeHtml(opt.text)}</span>`; // Adicionado span
             opts.appendChild(label);
           });
           
@@ -577,8 +581,7 @@
             const stmt = statements[i].replace(/^I+\.?\s*/i,'').replace(/^[IVX]+\.\s*/i,'').trim();
             const label = document.createElement('label');
             const idcb = uid('cb_');
-            // Adicionado <span> para quebra de linha
-            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> <span>${escapeHtml(stmt)}</span>`;
+            label.innerHTML = `<input type="checkbox" id="${idcb}" data-label="${romans[i]}"> <strong>${romans[i]}.</strong> <span>${escapeHtml(stmt)}</span>`; // Adicionado span
             wrap.appendChild(label);
           }
           if(!Array.isArray(q.answers)) q.answers = q.answers || [];
@@ -604,6 +607,12 @@
         const el = document.getElementById(q._domId);
         const res = { question: q, type: q.type, userAnswer: null, correct:false, explanation:'', autoGraded:false };
         
+        if (!el) { // Adiciona verificação se o elemento existe
+          console.error(`Elemento com ID ${q._domId} não encontrado para a questão ${q.id}`);
+          results.push(res); // Adiciona um resultado vazio para não quebrar a contagem
+          continue; // Pula para a próxima questão
+        }
+
         if(q.type === 'mcq' || q.type === 'wrong'){
           const checked = el.querySelector('input[type=radio]:checked');
           if(checked){
@@ -656,11 +665,11 @@
                 res.score = parsed.score;
                 res.feedback = parsed.feedback;
                 res.label = parsed.score >= 6 ? 'Bom' : 'Precisa melhorar';
-                res.correct = parsed.score >= 6;
+                res.correct = parsed.score >= 6; // Considera correto se nota >= 6
               } else {
                 res.autoGraded = true;
                 res.feedback = aiResp; 
-                res.correct = false;
+                res.correct = false; // Se não parsear, considera incorreto
               }
             }catch(err){
               console.warn('AI grading failed', err);
@@ -685,9 +694,11 @@
       let html = `<h3>Resultado</h3>`;
       let correctCount = 0;
       
+      // Recalcula contagem correta APÓS a correção
       results.forEach(r => {
           if (r.type === 'essay') {
-              if (r.autoGraded && typeof r.score === 'number' && r.score >= 6) {
+              // Somente conta como acerto se foi auto-corrigido E a nota foi >= 6
+              if (r.autoGraded && typeof r.score === 'number' && r.score >= 6) { 
                   correctCount++;
               }
           } else if (r.correct) {
@@ -699,12 +710,14 @@
       html += `<div style="margin-top:10px">`;
       
       results.forEach((r, idx) => {
+        // Usa o texto original da questão guardado no objeto 'r.question'
         html += `<div class="q"><h3>${idx+1}. ${escapeHtml(r.question.text)}</h3>`; 
         
         if(r.type === 'essay'){
           if(r.autoGraded){
             const score = (typeof r.score === 'number') ? r.score : '—';
-            const statusClass = (typeof r.score === 'number' && r.score >= 6) ? 'result-correct' : 'result-wrong';
+            // Usa r.correct (que agora reflete a nota >= 6) para a classe CSS
+            const statusClass = r.correct ? 'result-correct' : 'result-wrong'; 
             html += `<div class="tiny ${statusClass}">Nota (auto): <strong>${score}</strong> / 10 <span class="pill">${r.label || ''}</span></div>`;
             html += `<div class="explain"><strong>Feedback:</strong> ${escapeHtml(r.feedback || 'Sem feedback.')}</div>`;
           } else {
@@ -722,6 +735,7 @@
             }
           } else {
             html += `<div class="result-wrong">✖ Errado</div>`;
+            // Sempre mostra a explicação se estiver errada
             html += `<div class="explain"><strong>Explicação:</strong> ${escapeHtml(r.explanation || '—')}</div>`;
           }
         }
@@ -764,49 +778,79 @@
         }
         const j = await resp.json();
         try {
-            const textOut = j.candidates[0].content.parts[0].text;
-            return textOut;
+            // Tratamento de erro mais robusto para a resposta da API
+            if (j.candidates && j.candidates.length > 0 && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts.length > 0) {
+                 const textOut = j.candidates[0].content.parts[0].text;
+                 if (textOut) {
+                    return textOut;
+                 }
+            }
+            // Se a estrutura esperada não for encontrada, lança erro
+            console.error("Estrutura inesperada na resposta da API Gemini:", j);
+            throw new Error('Formato de resposta inesperado ou vazio da API.');
+
         } catch (e) {
-            console.error("Erro ao parsear resposta da API Gemini:", j);
+            // Captura erros de acesso a propriedades (ex: j.candidates[0] é undefined)
+            console.error("Erro ao parsear resposta da API Gemini:", e, j);
             throw new Error('Formato de resposta inesperado da API.');
         }
     }
 
     function tryParseScoreFeedback(aiText){
+      // Adiciona verificação se aiText é uma string válida
+      if (typeof aiText !== 'string' || !aiText) {
+          console.warn("Texto inválido recebido para parsear score/feedback:", aiText);
+          return null;
+      }
       try{
-        const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+        const jsonMatch = aiText.match(/```json\s*([\s\S]*?)\s*```|(\{[\s\S]*\})/); // Tenta pegar JSON dentro ou fora de ```json
         if(jsonMatch){
-          const obj = JSON.parse(jsonMatch[0]);
-          if(typeof obj.score !== 'undefined') {
-              return { score: Number(obj.score), feedback: String(obj.feedback || '') };
+          // Pega o grupo de captura correto (dentro de ``` ou o objeto direto)
+          const jsonString = jsonMatch[1] ? jsonMatch[1].trim() : jsonMatch[2].trim();
+          const obj = JSON.parse(jsonString);
+          if(typeof obj.score === 'number' && typeof obj.feedback === 'string') { // Verifica tipos
+              return { score: obj.score, feedback: obj.feedback };
+          } else {
+              console.warn("JSON parseado não contém 'score' (number) e 'feedback' (string):", obj);
           }
         }
       }catch(e){
-          console.warn("Falha ao parsear JSON da IA:", e);
+          console.warn("Falha ao parsear JSON da IA:", e, "Texto recebido:", aiText);
       }
-      const scoreMatch = aiText.match(/score[:\s]*([0-9]+(?:\.[0-9]+)?)/i);
-      if(scoreMatch){
+      
+      // Fallback aprimorado para "score: X" ou "Nota: X"
+      const scoreMatch = aiText.match(/(?:score|nota)\s*[:=\s]+\s*([0-9]+(?:\.[0-9]+)?)/i);
+      if(scoreMatch && scoreMatch[1]){
         const s = Number(scoreMatch[1]);
-        const fb = aiText.replace(scoreMatch[0],'').trim();
-        return { score: s, feedback: fb };
+        // Tenta pegar o feedback que vem *depois* da nota
+        const feedbackMatch = aiText.substring(scoreMatch[0].length).match(/(?:feedback|coment[áa]rio)\s*[:=\s]+\s*(.*)/i);
+        const fb = feedbackMatch && feedbackMatch[1] ? feedbackMatch[1].trim() : aiText.replace(scoreMatch[0],'').trim(); // Usa o resto se não achar 'feedback:'
+        return { score: s, feedback: fb || "Feedback não extraído." };
       }
+      
       console.warn("Não foi possível encontrar 'score' ou JSON na resposta da IA:", aiText);
-      return null;
+      // Retorna o texto cru como feedback se nada for encontrado
+      return { score: null, feedback: "Não foi possível extrair a nota. Resposta da IA: " + aiText }; 
     }
     function buildEssayGradingPrompt(questionText, expectedAnswer, studentAnswer){
-      return `Você é um avaliador especialista no assunto. Leia a questão e a resposta do aluno. Retorne apenas um JSON válido com o formato:
-    {"score": NotaEntre0e10, "feedback": "comentários objetivos, pontos fortes e pontos a melhorar (curto)"}
+      // Instrução mais clara para retornar SOMENTE o JSON
+      return `Você é um avaliador especialista. Avalie a resposta do aluno para a questão abaixo.
+Retorne SOMENTE um objeto JSON válido no formato:
+\`\`\`json
+{"score": NotaNumericaDe0a10, "feedback": "Comentários curtos e objetivos."}
+\`\`\`
+Não inclua nenhuma outra palavra ou explicação fora do bloco JSON.
 
-    Questão:
-    ${questionText}
+Questão:
+${questionText}
 
-    Resposta esperada (contexto):
-    ${expectedAnswer}
+Resposta esperada (contexto):
+${expectedAnswer}
 
-    Resposta do aluno:
-    ${studentAnswer}
+Resposta do aluno:
+${studentAnswer}
 
-    Avalie a resposta do aluno comparando com o esperado. Seja objetivo e devolva somente o JSON.`;
+Avalie a resposta do aluno comparando com o esperado. Forneça a nota (score) e um feedback conciso. Lembre-se: APENAS o JSON como resposta.`;
     }
 
     /* ---------- Init ---------- */
@@ -815,7 +859,5 @@
     })();
   </script>
   
-</body>
-</html>
 </body>
 </html>
